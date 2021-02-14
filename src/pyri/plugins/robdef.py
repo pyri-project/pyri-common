@@ -3,6 +3,7 @@ from typing import List, Dict, TYPE_CHECKING
 from importlib.metadata import entry_points
 import re
 import warnings
+from . import util as plugin_util
 
 class PyriRobDefPluginFactory:
     def __init__(self):
@@ -19,28 +20,14 @@ class PyriRobDefPluginFactory:
 
 
 def get_all_robdef_plugin_factories() -> List[PyriRobDefPluginFactory]:
-    robdefs = dict()
-    all_eps = entry_points()
-    if "pyri.plugins.robdef" not in all_eps:
-        return []
-
-    ret = []
-    eps = all_eps["pyri.plugins.robdef"]
-    for ep in eps:
-        factory_furc = ep.load()
-        ret.append(factory_furc)
-    return ret
+    return plugin_util.get_plugin_factories("pyri.plugins.robdef")
 
 def get_all_plugin_robdefs() -> Dict[str,str]:
     robdefs = dict()
-    all_eps = entry_points()
-    if "pyri.plugins.robdef" not in all_eps:
-        return dict()
+    factories = get_all_robdef_plugin_factories()
 
-    eps = all_eps["pyri.plugins.robdef"]
-    for ep in eps:
-        ep_func = ep.load()
-        plugin_robdefs = ep_func().get_robdefs()
+    for factory in factories:        
+        plugin_robdefs = factory.get_robdefs()
         for robdef in plugin_robdefs:
             for l in robdef.splitlines():
                 l = l.strip()

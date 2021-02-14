@@ -2,6 +2,7 @@ from typing import List, Dict, NamedTuple, TYPE_CHECKING
 from importlib.metadata import entry_points
 import re
 import warnings
+from . import util as plugin_util
 
 class PyriBlocklyCategory(NamedTuple):
     name: str
@@ -39,17 +40,7 @@ class PyriBlocklyPluginFactory:
         return []
 
 def get_all_robdef_blockly_factories() -> List[PyriBlocklyPluginFactory]:
-    robdefs = dict()
-    all_eps = entry_points()
-    if "pyri.plugins.blockly" not in all_eps:
-        return []
-
-    ret = []
-    eps = all_eps["pyri.plugins.blockly"]
-    for ep in eps:
-        factory_furc = ep.load()
-        ret.append(factory_furc())
-    return ret
+    return plugin_util.get_plugin_factories("pyri.plugins.blockly")
 
 def get_all_blockly_blocks() -> Dict[str,PyriBlocklyBlock]:
     factories = get_all_robdef_blockly_factories()
