@@ -1,12 +1,11 @@
 from typing import Callable, List, Dict
-from importlib.metadata import entry_points
 from . import util as plugin_util
 
 class PyriSandboxFunctionsPluginFactory:
     def __init__(self):
         super().__init__()
 
-    def get_plugin_name(self):
+    def get_plugin_name(self) -> str:
         return ""
 
     def get_sandbox_function_names(self) -> List[str]:
