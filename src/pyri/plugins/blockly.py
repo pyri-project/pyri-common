@@ -48,3 +48,10 @@ def get_all_blockly_blocks() -> Dict[str,PyriBlocklyBlock]:
     for f in factories:
         ret.update(f.get_all_blocks())
     return ret
+
+def get_all_blockly_categories() -> Dict[str,PyriBlocklyCategory]:
+    factories = get_all_robdef_blockly_factories()
+    ret = dict()
+    for f in factories:
+        ret.update(f.get_categories())
+    return ret
