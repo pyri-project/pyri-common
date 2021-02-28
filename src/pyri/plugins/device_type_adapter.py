@@ -5,10 +5,13 @@ class PyriDeviceTypeAdapterExtendedState(NamedTuple):
     robotraconteur_type: str
     display_flags: List[str]
     state_data: Any
+    ready: bool
+    error: bool
+    state_seqno: int
 
 
 class PyriDeviceTypeAdapter:
-    def __init__(self, device_subscription):
+    def __init__(self, device_subscription, node):
         pass
 
     def get_robotraconteur_type(self) -> str:
@@ -30,7 +33,7 @@ class PyriDeviceTypeAdapterPluginFactory:
     def get_robotraconteur_types(self) -> List[str]:
         return []
 
-    def create_device_type_adapter(self, robotraconteur_type: str, client_subscription: Any) -> PyriDeviceTypeAdapter:
+    def create_device_type_adapter(self, robotraconteur_type: str, client_subscription: Any, node) -> PyriDeviceTypeAdapter:
         return None
 
 def get_device_type_adapter_plugin_factories() -> List[PyriDeviceTypeAdapterPluginFactory]:
@@ -44,12 +47,12 @@ def get_all_robotraconteur_types() -> List[str]:
         ret.extend(factory.get_robotraconteur_types())        
     return ret
 
-def create_device_type_adapter(robotraconteur_type: str, client_subscription: Any) -> PyriDeviceTypeAdapter:
+def create_device_type_adapter(robotraconteur_type: str, client_subscription: Any, node) -> PyriDeviceTypeAdapter:
     factories = get_device_type_adapter_plugin_factories()
 
     for f in factories:
         rr_types = f.get_robotraconteur_types()
         if robotraconteur_type in rr_types:
-            return f.create_device_type_adapter(str, client_subscription)
+            return f.create_device_type_adapter(str, client_subscription, node)
     
     assert False, "Invalid robotraconteur_type device type adapter requested"
