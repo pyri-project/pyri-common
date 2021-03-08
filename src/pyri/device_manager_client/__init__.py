@@ -1,5 +1,6 @@
 import RobotRaconteur as RR
 import threading
+import traceback
 
 class DeviceManagerClient:
     def __init__(self,device_manager_url: str, node: RR.RobotRaconteurNode = None, autoconnect = True):
@@ -25,13 +26,17 @@ class DeviceManagerClient:
         self._refresh_devices2(active_devices)
 
     def refresh_devices(self, timeout = 0):
-        dev_res, dev_client = self._device_manager.TryGetDefaultClientWait(timeout)
-        if not dev_res:
-            raise Exception("Could not connect to device manager")
+        try:
+            dev_res, dev_client = self._device_manager.TryGetDefaultClientWait(timeout)
+            if not dev_res:
+                raise Exception("Could not connect to device manager")
 
-        active_devices = dev_client.getf_active_devices()
+            active_devices = dev_client.getf_active_devices()
 
-        self._refresh_devices2(active_devices)
+            self._refresh_devices2(active_devices)
+        except:
+            pass
+            #traceback.print_exc()
 
     def _refresh_devices2(self,active_devices):
         with self._lock:            
@@ -54,11 +59,16 @@ class DeviceManagerClient:
     def get_device_client(self, local_device_name,timeout = 0):
         with self._lock:
             sub = self._active_devices[local_device_name][1]
+            if not self._autoconnect and sub is None:
+                assert False, "Device not connected"                
         return sub.GetDefaultClientWait(timeout)
 
     def get_device_subscription(self, local_device_name):
         with self._lock:
-            return self._active_devices[local_device_name][1]
+            sub = self._active_devices[local_device_name][1]
+            if not self._autoconnect and sub is None:
+                assert False, "Device not connected"
+            return sub
 
     def connect_device(self, local_device_name):
         with self._lock:
