@@ -21,5 +21,9 @@ setup(
     tests_require=['pytest','pytest-asyncio'],
     extras_require={
         'test': ['pytest','pytest-asyncio']
+    },
+    entry_points = {
+        'pyri.plugins.sandbox_functions': ['pyri-common-sandbox-functions=pyri.sandbox_functions.sandbox_functions:get_sandbox_functions_factory'],
+        'pyri.plugins.blockly': ['pyri-common-plugin-blockly=pyri.blockly.blockly:get_blockly_factory']
     }
 )
