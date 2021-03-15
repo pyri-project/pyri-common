@@ -47,6 +47,10 @@ class DeviceManagerClient:
                         self._active_devices[a.local_device_name] = (a,a_client)
                     else:
                         self._active_devices[a.local_device_name] = (a,None)
+            a_names = [a.local_device_name for a in active_devices]
+            for a in list(self._active_devices.keys()):
+                if a not in a_names:
+                    del self._active_devices[a]
 
     def get_device_names(self):
         with self._lock:
@@ -77,5 +81,10 @@ class DeviceManagerClient:
             a=a[0]
             a_client = self._node.SubscribeService(a.urls)
             self._active_devices[local_device_name] = (a,a_client)
+
+    @property
+    def device_manager(self):
+        with self._lock:
+            return self._device_manager
         
 
