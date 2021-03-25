@@ -14,7 +14,41 @@ class DeviceManagerClient:
         self._autoconnect = autoconnect
 
         self._device_manager = self._node.SubscribeService(device_manager_url)
+        self._device_manager.ClientConnected += self._device_manager_client_connected
 
+    def _device_manager_client_connected(self, sub, subscription_id, c):
+        c.device_added += self._device_added_evt
+        c.device_removed += self._device_removed_evt
+        c.device_updated += self._device_updated_evt
+
+    def _device_added_evt(self, device, local_device_name):
+        self._evt_refresh_devices()
+
+    def _device_removed_evt(self, local_device_name):
+        self._evt_refresh_devices()
+
+    def _device_updated_evt(self, local_device_name):
+        self._evt_refresh_devices()
+
+    def _evt_refresh_devices(self):
+        try:
+            dev_res, dev_client = self._device_manager.TryGetDefaultClient()
+            if not dev_res:
+                return
+
+            def handler(active_devices, err):
+                if err is not None:
+                    # TODO: log internal error
+                    return
+                
+                self._refresh_devices2(active_devices)
+            
+            dev_client.async_getf_active_devices(handler, 1)
+        except:
+            #TODO: log internal error
+            
+            pass
+            
     async def async_refresh_devices(self, timeout = 0):
         dev_res, dev_client = self._device_manager.TryGetDefaultClient()
         if not dev_res:
