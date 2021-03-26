@@ -13,6 +13,7 @@ setup(
     zip_safe=False,
     install_requires=[
         'RobotRaconteur',
+        'RobotRaconteurCompanion',
         'numpy',
         'PyYAML',
         'yamale',
