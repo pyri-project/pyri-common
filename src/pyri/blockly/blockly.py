@@ -741,7 +741,7 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                             var dropdown_pers = block.getFieldValue('PERS');
                             var value_reset_value = Blockly.Python.valueToCode(block, 'RESET_VALUE', Blockly.Python.ORDER_ATOMIC);
                             // TODO: Assemble Python into code variable.
-                            var code = '\n';
+                            var code = '\\n';
                             return code;
                             };
                             """        
@@ -770,7 +770,7 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
         python_generator = """Blockly.Python['global_variable_delete'] = function(block) {
                             var text_name = block.getFieldValue('NAME');
                             // TODO: Assemble Python into code variable.
-                            var code = '\n';
+                            var code = '\\n';
                             return code;
                             };
                             """        
