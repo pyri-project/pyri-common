@@ -13,6 +13,10 @@ class DeviceManagerClient:
         self._active_devices=dict()
         self._autoconnect = autoconnect
 
+        self._device_added=RR.EventHook()
+        self._device_removed=RR.EventHook()
+        self._device_updated=RR.EventHook()
+
         self._device_manager = self._node.SubscribeService(device_manager_url)
         self._device_manager.ClientConnected += self._device_manager_client_connected
 
@@ -79,12 +83,26 @@ class DeviceManagerClient:
                     if self._autoconnect:
                         a_client = self._node.SubscribeService(a.urls)
                         self._active_devices[a.local_device_name] = (a,a_client)
+                        try:
+                            self._device_added.fire(a.local_device_name)
+                        except:
+                            traceback.print_exc()
                     else:
                         self._active_devices[a.local_device_name] = (a,None)
             a_names = [a.local_device_name for a in active_devices]
             for a in list(self._active_devices.keys()):
                 if a not in a_names:
+                    a_client = self._active_devices[a][1]
                     del self._active_devices[a]
+                    if a_client is not None:
+                        try:
+                            a_client.Close()
+                        except: pass
+                    try:
+                        self._device_removed.fire(a)
+                    except:
+                        traceback.print_exc()
+
 
     def get_device_names(self):
         with self._lock:
@@ -120,5 +138,24 @@ class DeviceManagerClient:
     def device_manager(self):
         with self._lock:
             return self._device_manager
-        
 
+    @property
+    def device_added(self):
+        return self._device_added
+    @device_added.setter
+    def device_added(self,value):
+        assert value == self._device_added
+        
+    @property
+    def device_removed(self):
+        return self._device_removed
+    @device_removed.setter
+    def device_removed(self,value):
+        assert value == self._device_removed
+
+    @property
+    def device_updated(self):
+        return self._device_updated
+    @device_updated.setter
+    def device_updated(self,value):
+        assert value == self._device_updated
