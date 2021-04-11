@@ -25,6 +25,8 @@ class DeviceManagerClient:
         c.device_removed += self._device_removed_evt
         c.device_updated += self._device_updated_evt
 
+        self._evt_refresh_devices()
+
     def _device_added_evt(self, device, local_device_name):
         self._evt_refresh_devices()
 
