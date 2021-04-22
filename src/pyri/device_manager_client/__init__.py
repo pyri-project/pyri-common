@@ -2,6 +2,8 @@ import RobotRaconteur as RR
 import threading
 import traceback
 
+from RobotRaconteurCompanion.Util.RobustFunctionCaller import RobustPollingAsyncFunctionCaller
+
 class DeviceManagerClient:
     def __init__(self,device_manager_url: str, node: RR.RobotRaconteurNode = None, autoconnect = True):
         self._lock = threading.RLock()
@@ -20,6 +22,16 @@ class DeviceManagerClient:
         self._device_manager = self._node.SubscribeService(device_manager_url)
         self._device_manager.ClientConnected += self._device_manager_client_connected
 
+        self._poller = RobustPollingAsyncFunctionCaller(self._update_poll_f, (), error_handler=self._poller_err_handler, poll_interval=25, node=self._node)
+        self._poller.poll_data += self._refresh_devices2
+
+    def _update_poll_f(self, h, t):
+        dev_client = self._device_manager.GetDefaultClient()                    
+        dev_client.async_getf_active_devices(h, t)
+
+    def _poller_err_handler(self, err):
+        print(err)
+
     def _device_manager_client_connected(self, sub, subscription_id, c):
         c.device_added += self._device_added_evt
         c.device_removed += self._device_removed_evt
@@ -37,23 +49,7 @@ class DeviceManagerClient:
         self._evt_refresh_devices()
 
     def _evt_refresh_devices(self):
-        try:
-            dev_res, dev_client = self._device_manager.TryGetDefaultClient()
-            if not dev_res:
-                return
-
-            def handler(active_devices, err):
-                if err is not None:
-                    # TODO: log internal error
-                    return
-                
-                self._refresh_devices2(active_devices)
-            
-            dev_client.async_getf_active_devices(handler, 1)
-        except:
-            #TODO: log internal error
-            
-            pass
+        self._poller.request_poll()
             
     async def async_refresh_devices(self, timeout = 0):
         dev_res, dev_client = self._device_manager.TryGetDefaultClient()
@@ -161,3 +157,6 @@ class DeviceManagerClient:
     @device_updated.setter
     def device_updated(self,value):
         assert value == self._device_updated
+
+    def close(self):
+        self._poller.close()
