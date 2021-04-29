@@ -898,7 +898,7 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                             var dropdown_component = block.getFieldValue('COMPONENT');
                             var value_pose = Blockly.Python.valueToCode(block, 'POSE', Blockly.Python.ORDER_ATOMIC);
                             // TODO: Assemble JavaScript into code variable.
-                            var code = 'geometry_pose_component_get(' + value_pose + ',' + dropdown_component + ')';
+                            var code = 'geometry_pose_component_get(' + value_pose + ',\"' + dropdown_component + '\")';
                             // TODO: Change ORDER_NONE to the correct strength.
                             return [code, Blockly.Python.ORDER_NONE];
                             };
@@ -960,7 +960,7 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                             var dropdown_component = block.getFieldValue('COMPONENT');
                             var value_pose = Blockly.Python.valueToCode(block, 'POSE', Blockly.Python.ORDER_ATOMIC);
                             // TODO: Assemble JavaScript into code variable.
-                            var code = 'geometry_pose_component_set(' + value_pose + ',' + dropdown_component + ')';
+                            var code = 'geometry_pose_component_set(' + value_pose + ',\"' + dropdown_component + '\")';
                             // TODO: Change ORDER_NONE to the correct strength.
                             return [code, Blockly.Python.ORDER_NONE];
                             };
