@@ -30,7 +30,8 @@ class DeviceManagerClient:
         dev_client.async_getf_active_devices(h, t)
 
     def _poller_err_handler(self, err):
-        print(err)
+        # TODO: Pass error information
+        pass
 
     def _device_manager_client_connected(self, sub, subscription_id, c):
         c.device_added += self._device_added_evt
