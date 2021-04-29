@@ -342,7 +342,7 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                     },
                     {
                     "type": "input_value",
-                    "name": "NAME"
+                    "name": "B"
                     },
                     {
                     "type": "input_dummy"
@@ -356,7 +356,7 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
         python_generator = """Blockly.Python['linalg_binary_op'] = function(block) {
                             var value_a = Blockly.Python.valueToCode(block, 'A', Blockly.Python.ORDER_ATOMIC);
                             var dropdown_op = block.getFieldValue('OP');
-                            var value_name = Blockly.Python.valueToCode(block, 'NAME', Blockly.Python.ORDER_ATOMIC);
+                            var value_b = Blockly.Python.valueToCode(block, 'B', Blockly.Python.ORDER_ATOMIC);
                             // TODO: Assemble Python into code variable.
                             var code = 'null';
                             // TODO: Change ORDER_NONE to the correct strength.
@@ -776,7 +776,266 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                             """        
     )
 
+    blocks["geometry_pose_new"] = PyriBlocklyBlock(
+        name = "geometry_pose_new",
+        category = "Geometry",
+        doc = "Create a new pose",
+        json = """{
+                "type": "geometry_pose_new",
+                "message0": "new pose    x %1 y %2 z %3 R %4 P %5 Y %6",
+                "args0": [
+                    {
+                    "type": "input_value",
+                    "name": "X",
+                    "check": "Number"
+                    },
+                    {
+                    "type": "input_value",
+                    "name": "Y",
+                    "check": "Number",
+                    "align": "RIGHT"
+                    },
+                    {
+                    "type": "input_value",
+                    "name": "Z",
+                    "check": "Number",
+                    "align": "RIGHT"
+                    },
+                    {
+                    "type": "input_value",
+                    "name": "R_X",
+                    "check": "Number",
+                    "align": "RIGHT"
+                    },
+                    {
+                    "type": "input_value",
+                    "name": "R_P",
+                    "check": "Number",
+                    "align": "RIGHT"
+                    },
+                    {
+                    "type": "input_value",
+                    "name": "R_Y",
+                    "check": "Number",
+                    "align": "RIGHT"
+                    }
+                ],
+                "output": null,
+                "colour": 230,
+                "tooltip": "Create a new pose",
+                "helpUrl": ""
+                }
 
+               """,
+        python_generator = """
+                            Blockly.Python['geometry_pose_new'] = function(block) {
+                                var value_x = Blockly.Python.valueToCode(block, 'X', Blockly.Python.ORDER_ATOMIC);
+                                var value_y = Blockly.Python.valueToCode(block, 'Y', Blockly.Python.ORDER_ATOMIC);
+                                var value_z = Blockly.Python.valueToCode(block, 'Z', Blockly.Python.ORDER_ATOMIC);
+                                var value_r_x = Blockly.Python.valueToCode(block, 'R_X', Blockly.Python.ORDER_ATOMIC);
+                                var value_r_p = Blockly.Python.valueToCode(block, 'R_P', Blockly.Python.ORDER_ATOMIC);
+                                var value_r_y = Blockly.Python.valueToCode(block, 'R_Y', Blockly.Python.ORDER_ATOMIC);
+                                // TODO: Assemble JavaScript into code variable.
+                                var code = 'geometry_pose_new(' + value_x + ',' + value_y + ',' + value_z + ',' + value_r_x + ',' + value_r_p + ',' + value_r_y + ')';
+                                // TODO: Change ORDER_NONE to the correct strength.
+                                return [code, Blockly.Python.ORDER_NONE];
+                            };
+                           """
+    )
+
+    blocks["geometry_pose_component_get"] = PyriBlocklyBlock(
+        name = "geometry_pose_component_get",
+        category = "Geometry",
+        doc = "Get component of a pose",
+        json = """
+               {
+                "type": "geometry_pose_component_get",
+                "message0": "get pose component %1 %2",
+                "args0": [
+                    {
+                    "type": "field_dropdown",
+                    "name": "COMPONENT",
+                    "options": [
+                        [
+                        "x",
+                        "X"
+                        ],
+                        [
+                        "y",
+                        "Y"
+                        ],
+                        [
+                        "x",
+                        "Z"
+                        ],
+                        [
+                        "R",
+                        "R_R"
+                        ],
+                        [
+                        "P",
+                        "R_P"
+                        ],
+                        [
+                        "Y",
+                        "R_Y"
+                        ]
+                    ]
+                    },
+                    {
+                    "type": "input_value",
+                    "name": "POSE"
+                    }
+                ],
+                "output": null,
+                "colour": 230,
+                "tooltip": "Get component of a pose",
+                "helpUrl": ""
+                }
+               """,
+        python_generator = """
+                            Blockly.Python['geometry_pose_component_get'] = function(block) {
+                            var dropdown_component = block.getFieldValue('COMPONENT');
+                            var value_pose = Blockly.Python.valueToCode(block, 'POSE', Blockly.Python.ORDER_ATOMIC);
+                            // TODO: Assemble JavaScript into code variable.
+                            var code = 'geometry_pose_component_get(' + value_pose + ',' + dropdown_component + ')';
+                            // TODO: Change ORDER_NONE to the correct strength.
+                            return [code, Blockly.Python.ORDER_NONE];
+                            };
+                           """
+    )
+
+    blocks["geometry_pose_component_set"] = PyriBlocklyBlock(
+        name = "geometry_pose_component_set",
+        category = "Geometry",
+        doc = "Set component of a pose",
+        json = """
+              {
+                "type": "geometry_pose_component_set",
+                "message0": "set pose component %1 %2",
+                "args0": [
+                    {
+                    "type": "field_dropdown",
+                    "name": "COMPONENT",
+                    "options": [
+                        [
+                        "x",
+                        "X"
+                        ],
+                        [
+                        "y",
+                        "Y"
+                        ],
+                        [
+                        "x",
+                        "Z"
+                        ],
+                        [
+                        "R",
+                        "R_R"
+                        ],
+                        [
+                        "P",
+                        "R_P"
+                        ],
+                        [
+                        "Y",
+                        "R_Y"
+                        ]
+                    ]
+                    },
+                    {
+                    "type": "input_value",
+                    "name": "POSE"
+                    }
+                ],
+                "output": null,
+                "colour": 230,
+                "tooltip": "Set component of a pose",
+                "helpUrl": ""
+                }
+               """,
+        python_generator = """
+                            Blockly.Python['geometry_pose_component_set'] = function(block) {
+                            var dropdown_component = block.getFieldValue('COMPONENT');
+                            var value_pose = Blockly.Python.valueToCode(block, 'POSE', Blockly.Python.ORDER_ATOMIC);
+                            // TODO: Assemble JavaScript into code variable.
+                            var code = 'geometry_pose_component_set(' + value_pose + ',' + dropdown_component + ')';
+                            // TODO: Change ORDER_NONE to the correct strength.
+                            return [code, Blockly.Python.ORDER_NONE];
+                            };
+                           """
+    )
+
+    blocks["geometry_pose_multiply"] = PyriBlocklyBlock(
+        name = "geometry_pose_multiply",
+        category = "Geometry",
+        doc = "Multiply two poses",
+        json = """
+               {
+                "type": "geometry_pose_multiply",
+                "message0": "pose multiply %1 times %2 %3",
+                "args0": [
+                    {
+                    "type": "input_value",
+                    "name": "A"
+                    },
+                    {
+                    "type": "input_value",
+                    "name": "B"
+                    },
+                    {
+                    "type": "input_dummy"
+                    }
+                ],
+                "output": null,
+                "colour": 230,
+                "tooltip": "Set component of a pose",
+                "helpUrl": ""
+                }
+               """,
+        python_generator = """
+                            Blockly.Python['geometry_pose_multiply'] = function(block) {
+                            var value_a = Blockly.Python.valueToCode(block, 'A', Blockly.Python.ORDER_ATOMIC);
+                            var value_b = Blockly.Python.valueToCode(block, 'B', Blockly.Python.ORDER_ATOMIC);
+                            // TODO: Assemble JavaScript into code variable.
+                            var code = 'geometry_pose_multiply(' + value_a + ',' + value_b + ')';
+                            // TODO: Change ORDER_NONE to the correct strength.
+                            return [code, Blockly.Python.ORDER_NONE];
+                            };
+                           """
+        )
+
+    blocks["geometry_pose_inv"] = PyriBlocklyBlock(
+        name = "geometry_pose_inv",
+        category = "Geometry",
+        doc = "Get inverse of pose",
+        json = """
+               {
+                "type": "geometry_pose_inv",
+                "message0": "pose inv %1",
+                "args0": [
+                    {
+                    "type": "input_value",
+                    "name": "A"
+                    }
+                ],
+                "output": null,
+                "colour": 230,
+                "tooltip": "Get inverse of pose",
+                "helpUrl": ""
+                }
+               """,
+        python_generator = """
+                            Blockly.Python['geometry_pose_inv'] = function(block) {
+                            var value_a = Blockly.Python.valueToCode(block, 'A', Blockly.Python.ORDER_ATOMIC);
+                            // TODO: Assemble JavaScript into code variable.
+                            var code = 'geometry_pose_inv(' + value_a + ')';
+                            // TODO: Change ORDER_NONE to the correct strength.
+                            return [code, Blockly.Python.ORDER_NONE];
+                            };
+                           """
+        )
 
     return blocks
 
@@ -794,6 +1053,11 @@ def _get_categories() -> Dict[str,PyriBlocklyCategory]:
     categories["Linalg"] = PyriBlocklyCategory(
         name ="Linalg",
         json = '{"kind": "category", "name": "Linalg", "colour": 230 }'
+    )
+
+    categories["Geometry"] = PyriBlocklyCategory(
+        name = "Geometry",
+        json = '{"kind": "category", "name": "Geometry", "colour": 230}'
     )
 
     return categories
