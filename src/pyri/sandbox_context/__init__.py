@@ -6,6 +6,7 @@ class PyriSandboxContext(threading.local):
     device_manager = None
     print_func = None
     action_runner = None
+    context_vars = dict()
 
 class PyriSandboxContextScope:
     def __init__(self, node, device_manager,print_func, action_runner):
@@ -19,12 +20,14 @@ class PyriSandboxContextScope:
         PyriSandboxContext.device_manager = self._device_manager
         PyriSandboxContext.print_func = self._print_func
         PyriSandboxContext.action_runner = self._action_runner
+        PyriSandboxContext.context_vars = dict()
 
     def __exit__(self, type_, value, traceback):
         PyriSandboxContext.node = None
         PyriSandboxContext.device_manager = None
         PyriSandboxContext.print_func = None
         PyriSandboxContext.action_runner = None
+        PyriSandboxContext.context_vars = dict()
 
 class PyriSandboxActionRunner:
     def run_action(self, local_device_name, gen, wait = False):
