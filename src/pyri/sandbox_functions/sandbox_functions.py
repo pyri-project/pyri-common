@@ -2,10 +2,16 @@ from pyri.plugins.sandbox_functions import PyriSandboxFunctionsPluginFactory
 from pyri.sandbox_context import PyriSandboxContext
 import numpy as np
 import time
+import copy
 
 import general_robotics_toolbox as rox
 
 from RobotRaconteurCompanion.Util.GeometryUtil import GeometryUtil
+
+def util_copy(var):
+
+    # TODO: Restrict which objects can be copied?
+    return copy.deepcopy(var)
 
 def time_wait(seconds):
     time.sleep(seconds)
@@ -41,17 +47,17 @@ def geometry_pose_component_get(pose, component_name):
     rpy = np.rad2deg(rpy)
 
     if component_name == "X":
-        return xyz[0]
+        return float(xyz[0])
     if component_name == "Y":
-        return xyz[1]
+        return float(xyz[1])
     if component_name == "Z":
-        return xyz[2]
+        return float(xyz[2])
     if component_name == "R_R":
-        return rpy[0]
+        return float(rpy[0])
     if component_name == "R_P":
-        return rpy[1]
+        return float(rpy[1])
     if component_name == "R_Y":
-        return rpy[2]
+        return float(rpy[2])
     assert False, "Invalid pose component"
 
 def geometry_pose_component_set(pose, component_name, value):

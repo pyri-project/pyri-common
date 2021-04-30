@@ -911,56 +911,61 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
         doc = "Set component of a pose",
         json = """
               {
-                "type": "geometry_pose_component_set",
-                "message0": "set pose component %1 %2",
-                "args0": [
-                    {
-                    "type": "field_dropdown",
-                    "name": "COMPONENT",
-                    "options": [
-                        [
-                        "x",
-                        "X"
-                        ],
-                        [
-                        "y",
-                        "Y"
-                        ],
-                        [
-                        "x",
-                        "Z"
-                        ],
-                        [
-                        "R",
-                        "R_R"
-                        ],
-                        [
-                        "P",
-                        "R_P"
-                        ],
-                        [
-                        "Y",
-                        "R_Y"
-                        ]
+            "type": "geometry_pose_component_set",
+            "message0": "set pose %1 component %2 %3",
+            "args0": [
+                {
+                "type": "input_value",
+                "name": "POSE"
+                },
+                {
+                "type": "field_dropdown",
+                "name": "COMPONENT",
+                "options": [
+                    [
+                    "x",
+                    "X"
+                    ],
+                    [
+                    "y",
+                    "Y"
+                    ],
+                    [
+                    "x",
+                    "Z"
+                    ],
+                    [
+                    "R",
+                    "R_R"
+                    ],
+                    [
+                    "P",
+                    "R_P"
+                    ],
+                    [
+                    "Y",
+                    "R_Y"
                     ]
-                    },
-                    {
-                    "type": "input_value",
-                    "name": "POSE"
-                    }
-                ],
-                "output": null,
-                "colour": 230,
-                "tooltip": "Set component of a pose",
-                "helpUrl": ""
+                ]
+                },
+                {
+                "type": "input_value",
+                "name": "VALUE"
                 }
+            ],
+            "output": null,
+            "colour": 230,
+            "tooltip": "Set component of a pose",
+            "helpUrl": ""
+            }
                """,
         python_generator = """
                             Blockly.Python['geometry_pose_component_set'] = function(block) {
                             var dropdown_component = block.getFieldValue('COMPONENT');
                             var value_pose = Blockly.Python.valueToCode(block, 'POSE', Blockly.Python.ORDER_ATOMIC);
+                            var value_value = Blockly.Python.valueToCode(block, 'VALUE', Blockly.Python.ORDER_ATOMIC);
                             // TODO: Assemble JavaScript into code variable.
-                            var code = 'geometry_pose_component_set(' + value_pose + ',\"' + dropdown_component + '\")';
+                            var code = 'geometry_pose_component_set(' + value_pose + ',\"' + dropdown_component + '\",' + value_value + ')';
                             // TODO: Change ORDER_NONE to the correct strength.
                             return [code, Blockly.Python.ORDER_NONE];
                             };
@@ -1037,10 +1042,45 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                            """
         )
 
+    blocks["util_copy"] = PyriBlocklyBlock(
+            name = "util_copy",
+            category = "Util",
+            doc = "Get inverse of pose",
+            json = """
+                    {
+                    "type": "util_copy",
+                    "message0": "copy value %1",
+                    "args0": [
+                        {
+                        "type": "input_value",
+                        "name": "VALUE"
+                        }
+                    ],
+                    "output": null,
+                    "colour": 330,
+                    "tooltip": "Copy a value",
+                    "helpUrl": ""
+                    }
+                    """,
+            python_generator = """
+                                Blockly.Python['util_copy'] = function(block) {
+                                var value_value = Blockly.Python.valueToCode(block, 'VALUE', Blockly.Python.ORDER_ATOMIC);
+                                // TODO: Assemble Python into code variable.
+                                var code = 'util_copy(' + value_value + ')';
+                                // TODO: Change ORDER_NONE to the correct strength.
+                                return [code, Blockly.Python.ORDER_NONE];
+                                };
+                            """
+        )
+
     return blocks
 
 def _get_categories() -> Dict[str,PyriBlocklyCategory]:
     categories = {}
+    categories["Util"] = PyriBlocklyCategory(
+        name = "Util",
+        json = '{"kind": "category", "name": "Util", "colour": 330 }'
+    )
     categories["Globals"] = PyriBlocklyCategory(
         name = "Globals",
         json = '{"kind": "category", "name": "Globals", "colour": 330 }'
