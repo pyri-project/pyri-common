@@ -34,6 +34,81 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                             """
         
     )
+
+    blocks["time_wait_for_completion"] = PyriBlocklyBlock(
+        name = "time_wait_for_completion",
+        category = "Time",
+        doc = "Wait for device action to complete with timeout specified in seconds",
+        json = """
+                {
+                "type": "time_wait_for_completion",
+                "message0": "wait for device %1 action to complete with %2 second timeout",
+                "args0": [
+                    {
+                    "type": "field_input",
+                    "name": "DEVICE_NAME",
+                    "text": "robot"
+                    },
+                    {
+                    "type": "field_number",
+                    "name": "TIMEOUT",
+                    "value": 15,
+                    "min": 0,
+                    "max": 3600
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": 65,
+                "tooltip": "Wait for device action to complete",
+                "helpUrl": ""
+                }
+                """,
+        python_generator = """
+                            Blockly.Python['time_wait_for_completion'] = function(block) {
+                            var text_device_name = block.getFieldValue('DEVICE_NAME');
+                            var number_timeout = block.getFieldValue('TIMEOUT');
+                            // TODO: Assemble Python into code variable.
+                            var code = 'time_wait_for_completion(\"' + text_device_name + '\",' + number_timeout + ')\\n';
+                            return code;
+                            };
+                            """
+    )
+
+    blocks["time_wait_for_completion_all"] = PyriBlocklyBlock(
+        name = "time_wait_for_completion_all",
+        category = "Time",
+        doc = "Wait for all device actions to complete with timeout specified in seconds",
+        json = """
+                {
+                "type": "time_wait_for_completion_all",
+                "message0": "wait for device actions to complete with %1 second timeout",
+                "args0": [
+                    {
+                    "type": "field_number",
+                    "name": "TIMEOUT",
+                    "value": 15,
+                    "min": 0,
+                    "max": 3600
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": 65,
+                "tooltip": "Wait for device action to complete",
+                "helpUrl": ""
+                }
+                """,
+        python_generator = """
+                            Blockly.Python['time_wait_for_completion_all'] = function(block) {
+                            var number_timeout = block.getFieldValue('TIMEOUT');
+                            // TODO: Assemble Python into code variable.
+                            var code = 'time_wait_for_completion_all(' + number_timeout + ')\\n';
+                            return code;
+                            };
+                            """
+    )
+
     blocks["linalg_vector"] = PyriBlocklyBlock(
         name = "linalg_vector",
         category = "Linalg",

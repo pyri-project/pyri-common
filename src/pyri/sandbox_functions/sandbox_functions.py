@@ -13,6 +13,12 @@ def util_copy(var):
     # TODO: Restrict which objects can be copied?
     return copy.deepcopy(var)
 
+def time_wait_for_completion(local_device_name, timeout):
+    PyriSandboxContext.action_runner.wait_for_completion(local_device_name, timeout)
+
+def time_wait_for_completion_all(timeout):
+    PyriSandboxContext.action_runner.wait_for_completion_all(timeout)
+
 def time_wait(seconds):
     time.sleep(seconds)
 
@@ -99,6 +105,8 @@ def geometry_pose_inv(pose):
 def _get_sandbox_functions():
     return {
         "time_wait": time_wait,
+        "time_wait_for_completion": time_wait_for_completion,
+        "time_wait_for_completion_all": time_wait_for_completion_all,
         "linalg_vector": linalg_vector,
         "global_variable_get": global_variable_get,
         "geometry_pose_new": geometry_pose_new,
