@@ -120,7 +120,7 @@ class DeviceManagerClient:
                         urls = self._filter_urls(a.urls)
                         if len(urls) == 0:
                             continue
-                        a_client = self._node.SubscribeService()
+                        a_client = self._node.SubscribeService(urls)
                         self._active_devices[a.local_device_name] = (a,a_client)
                         try:
                             self._device_added.fire(a.local_device_name)
