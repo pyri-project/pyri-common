@@ -1,11 +1,14 @@
 import RobotRaconteur as RR
 import threading
 import traceback
+import urllib.parse
+import re
+import ipaddress
 
 from RobotRaconteurCompanion.Util.RobustFunctionCaller import RobustPollingAsyncFunctionCaller
 
 class DeviceManagerClient:
-    def __init__(self,device_manager_url: str, node: RR.RobotRaconteurNode = None, autoconnect = True):
+    def __init__(self,device_manager_url: str, node: RR.RobotRaconteurNode = None, autoconnect = True, tcp_ipv4_only = False):
         self._lock = threading.RLock()
         if node is None:
             self._node = RR.RobotRaconteurNode.s
@@ -14,6 +17,7 @@ class DeviceManagerClient:
 
         self._active_devices=dict()
         self._autoconnect = autoconnect
+        self._tcp_ipv4_only = tcp_ipv4_only
 
         self._device_added=RR.EventHook()
         self._device_removed=RR.EventHook()
@@ -75,12 +79,48 @@ class DeviceManagerClient:
             pass
             #traceback.print_exc()
 
+    def _filter_urls(self,urls):
+        if not self._tcp_ipv4_only:
+            return urls
+        
+        ret = []
+
+        for u in urls:
+            u1 = urllib.parse.urlparse(u)
+
+            if re.match(r"^rrs?\+tcp$",u1.scheme) is not None \
+                or re.match(r"^rrs?\+wss?$",u1.scheme) is not None:
+                
+                netloc = u1.netloc
+                netloc_re = re.match(r"^(.*?)(\:\d+)?$",netloc)
+                if netloc_re is None:
+                    ret.append(u)
+                    continue
+
+                netloc = netloc_re.group(1)
+
+                try:
+                    netloc = netloc.strip("[]")
+                    ipaddr = ipaddress.ip_address(netloc)
+                except ValueError:
+                    # Assume a hostname?
+                    ret.append(u)
+                else:
+                    if isinstance(ipaddr,ipaddress.IPv4Address):
+                        ret.append(u)
+
+        return ret
+
+
     def _refresh_devices2(self,active_devices):
         with self._lock:            
             for a in active_devices:
                 if a.local_device_name not in self._active_devices:                    
                     if self._autoconnect:
-                        a_client = self._node.SubscribeService(a.urls)
+                        urls = self._filter_urls(a.urls)
+                        if len(urls) == 0:
+                            continue
+                        a_client = self._node.SubscribeService()
                         self._active_devices[a.local_device_name] = (a,a_client)
                         try:
                             self._device_added.fire(a.local_device_name)
@@ -130,7 +170,11 @@ class DeviceManagerClient:
             a = self._active_devices.get(local_device_name)
             assert a is not None, f"Invalid device requested: {local_device_name}"
             a=a[0]
-            a_client = self._node.SubscribeService(a.urls)
+            urls = self._filter_urls(a.urls)
+            if len(urls) > 0:
+                a_client = self._node.SubscribeService(urls)
+            else:
+                a_client = None
             self._active_devices[local_device_name] = (a,a_client)
 
     @property
