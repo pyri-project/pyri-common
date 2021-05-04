@@ -17,7 +17,8 @@ setup(
         'numpy',
         'PyYAML',
         'yamale',
-        'appdirs'
+        'appdirs',
+        'netifaces'
     ],
     tests_require=['pytest','pytest-asyncio'],
     extras_require={
