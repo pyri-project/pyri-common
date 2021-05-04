@@ -1,6 +1,9 @@
 import RobotRaconteur as RR
 import numpy as np
-import netifaces
+try:
+    import netifaces
+except:
+    pass
 import socket
 
 def _numpy_to_plain(d):
