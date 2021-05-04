@@ -35,9 +35,12 @@ class PyriSandboxActionRunner:
     def __init__(self):
         self.lock = threading.RLock()
         self._runners = dict()
+        self._abort = False
 
     def run_action(self, local_device_name, gen, wait = False):
         with self.lock:
+            if self._abort:
+                raise RR.OperationAbortedException("Procedure has been aborted")
             current_r = self._runners.get(local_device_name,None)
             if current_r is not None:
                 if current_r.running:
@@ -68,6 +71,13 @@ class PyriSandboxActionRunner:
             if t_remaining < 0:
                 raise RR.OperationTimeoutException("Timeout waiting for all actions to finish")
             r.wait_for_completion(t_remaining)
+
+    def abort(self):
+        with self.lock:
+            self._abort = True
+            for v in self._runners.values():
+                v.abort()
+
 
 
 class PyriSandboxActionRunnerInst:
@@ -108,6 +118,12 @@ class PyriSandboxActionRunnerInst:
             try:
                 if err:
                     self._done(err)
+                if self._parent._abort:
+                    self._done(RR.OperationAbortedException("Operation aborted"))
+                    try:
+                        self._gen.AsyncAbort(lambda e: None)
+                    except Exception:
+                        pass
                 # TODO: Show user verification before Next?
                 self._gen.AsyncNext(None, self._async_next_handler)
             except Exception as e:
@@ -128,3 +144,11 @@ class PyriSandboxActionRunnerInst:
         with self._parent.lock:
             if self.error is not None:
                 raise self.error
+
+    def abort(self):
+        self.error = RR.OperationAbortedException("Procedure has been stopped")
+        self.evt.set()
+        try:
+            self._gen.AsyncAbort(lambda e: None)
+        except Exception:
+            pass
