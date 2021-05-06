@@ -940,7 +940,7 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                         "Y"
                         ],
                         [
-                        "x",
+                        "z",
                         "Z"
                         ],
                         [
@@ -1006,7 +1006,7 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                     "Y"
                     ],
                     [
-                    "x",
+                    "z",
                     "Z"
                     ],
                     [
