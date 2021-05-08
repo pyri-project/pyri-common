@@ -20,6 +20,7 @@ def time_wait_for_completion_all(timeout):
     PyriSandboxContext.action_runner.wait_for_completion_all(timeout)
 
 def time_wait(seconds):
+    """Wait for a specified time in seconds"""
     time.sleep(seconds)
 
 def linalg_vector(string_vector):
