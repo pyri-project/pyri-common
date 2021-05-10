@@ -103,6 +103,12 @@ def geometry_pose_inv(pose):
     T_res = T_rox.inv()
     return geom_util.rox_transform_to_pose(T_res)
 
+def proc_result_get():
+    return PyriSandboxContext.proc_result
+
+def proc_result_set(result):
+    PyriSandboxContext.proc_result = result
+
 def _get_sandbox_functions():
     return {
         "time_wait": time_wait,
@@ -114,7 +120,9 @@ def _get_sandbox_functions():
         "geometry_pose_component_get": geometry_pose_component_get,
         "geometry_pose_component_set": geometry_pose_component_set,
         "geometry_pose_multiply": geometry_pose_multiply,
-        "geometry_pose_inv": geometry_pose_inv
+        "geometry_pose_inv": geometry_pose_inv,
+        "proc_result_get": proc_result_get,
+        "proc_result_set": proc_result_set
     }
 
 class PyriCommonSandboxFunctionsPluginFactory(PyriSandboxFunctionsPluginFactory):

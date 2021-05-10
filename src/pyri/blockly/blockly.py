@@ -1148,6 +1148,57 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                             """
         )
 
+    blocks["proc_result_get"] = PyriBlocklyBlock(
+        name = "proc_result_get",
+        category = "Util",
+        doc = "Get the current procedure result",
+        json = """{
+                "type": "proc_result_get",
+                "message0": "procedure result",
+                "output": null,
+                "colour": 330,
+                "tooltip": "Get the current procedure result",
+                "helpUrl": ""
+                }""",
+        python_generator = """Blockly.Python['proc_result_get'] = function(block) {                            
+                            // TODO: Assemble Python into code variable.
+                            var code = 'proc_result_get()';
+                            // TODO: Change ORDER_NONE to the correct strength.
+                            return [code, Blockly.Python.ORDER_NONE];
+                            };
+                            """        
+    )
+
+    blocks["proc_result_set"] = PyriBlocklyBlock(
+        name = "proc_result_set",
+        category = "Util",
+        doc = "Set the procedure result",
+        json = """{
+                "type": "proc_result_set",
+                "message0": "procedure result %1",
+                "args0": [
+                    {
+                    "type": "input_value",
+                    "name": "VALUE"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": 330,
+                "tooltip": "Set a global variable value",
+                "helpUrl": ""
+                }""",
+        python_generator = """Blockly.Python['proc_result_set'] = function(block) {
+                            var value_value = Blockly.Python.valueToCode(block, 'VALUE', Blockly.Python.ORDER_ATOMIC);
+                            // TODO: Assemble Python into code variable.
+                            var code = 'proc_result_set(' + value_value + ')';
+                            return code;
+                            };
+                            """        
+    )
+
+        
+
     return blocks
 
 def _get_categories() -> Dict[str,PyriBlocklyCategory]:
