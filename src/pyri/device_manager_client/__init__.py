@@ -16,6 +16,7 @@ class DeviceManagerClient:
             self._node = node
 
         self._connect_request_devices = set()
+        self._connect_request_device_types = set()
 
         self._active_devices=dict()
         self._autoconnect = autoconnect
@@ -118,7 +119,10 @@ class DeviceManagerClient:
         with self._lock:            
             for a in active_devices:
                 if a.local_device_name not in self._active_devices:                   
-                    if self._autoconnect or a.local_device_name in self._connect_request_devices:
+                    if self._autoconnect or a.local_device_name in self._connect_request_devices or \
+                        a.root_object_type in self._connect_request_device_types or \
+                        not self._connect_request_device_types.isdisjoint(a.root_object_implements):
+
                         urls = self._filter_urls(a.urls)
                         if len(urls) == 0:
                             continue
@@ -173,13 +177,39 @@ class DeviceManagerClient:
             a = self._active_devices.get(local_device_name, None)
             if a is None:
                 return
-            a=a[0]
-            urls = self._filter_urls(a.urls)
-            if len(urls) > 0:
-                a_client = self._node.SubscribeService(urls)
-            else:
-                a_client = None
-            self._active_devices[local_device_name] = (a,a_client)
+            if a[1] is None:
+                a=a[0]
+                urls = self._filter_urls(a.urls)
+                if len(urls) > 0:
+                    a_client = self._node.SubscribeService(urls)
+                    try:
+                        self._device_added.fire(a.local_device_name)
+                    except:
+                        traceback.print_exc()
+                else:
+                    a_client = None
+                self._active_devices[local_device_name] = (a,a_client)
+
+    def connect_device_type(self, device_type):
+        with self._lock:
+            self._connect_request_device_types.add(device_type)
+            for local_device_name, a in self._active_devices.items():
+                if a[1] is not None:
+                    continue
+                a0=a[0]
+                if a0.root_object_type not in self._connect_request_device_types \
+                    and self._connect_request_device_types.isdisjoint(a0.root_object_implements):
+                    continue
+                urls = self._filter_urls(a0.urls)
+                if len(urls) > 0:
+                    a_client = self._node.SubscribeService(urls)
+                    try:
+                        self._device_added.fire(a0.local_device_name)
+                    except:
+                        traceback.print_exc()
+                else:
+                    a_client = None
+                self._active_devices[local_device_name] = (a,a_client)
 
     @property
     def device_manager(self):
