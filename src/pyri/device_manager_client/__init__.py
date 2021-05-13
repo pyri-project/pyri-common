@@ -15,6 +15,8 @@ class DeviceManagerClient:
         else:
             self._node = node
 
+        self._connect_request_devices = set()
+
         self._active_devices=dict()
         self._autoconnect = autoconnect
         self._tcp_ipv4_only = tcp_ipv4_only
@@ -115,8 +117,8 @@ class DeviceManagerClient:
     def _refresh_devices2(self,active_devices):
         with self._lock:            
             for a in active_devices:
-                if a.local_device_name not in self._active_devices:                    
-                    if self._autoconnect:
+                if a.local_device_name not in self._active_devices:                   
+                    if self._autoconnect or a.local_device_name in self._connect_request_devices:
                         urls = self._filter_urls(a.urls)
                         if len(urls) == 0:
                             continue
@@ -167,8 +169,10 @@ class DeviceManagerClient:
 
     def connect_device(self, local_device_name):
         with self._lock:
-            a = self._active_devices.get(local_device_name)
-            assert a is not None, f"Invalid device requested: {local_device_name}"
+            self._connect_request_devices.add(local_device_name)
+            a = self._active_devices.get(local_device_name, None)
+            if a is None:
+                return
             a=a[0]
             urls = self._filter_urls(a.urls)
             if len(urls) > 0:
