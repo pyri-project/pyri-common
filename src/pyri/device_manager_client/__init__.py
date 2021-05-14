@@ -128,10 +128,9 @@ class DeviceManagerClient:
                             continue
                         a_client = self._node.SubscribeService(urls)
                         self._active_devices[a.local_device_name] = (a,a_client)
-                        try:
-                            self._device_added.fire(a.local_device_name)
-                        except:
-                            traceback.print_exc()
+                        
+                        self._node.PostToThreadPool(lambda: self._device_added.fire(a.local_device_name))
+                        
                     else:
                         self._active_devices[a.local_device_name] = (a,None)
             a_names = [a.local_device_name for a in active_devices]
@@ -143,10 +142,9 @@ class DeviceManagerClient:
                         try:
                             a_client.Close()
                         except: pass
-                    try:
-                        self._device_removed.fire(a)
-                    except:
-                        traceback.print_exc()
+                    
+                    self._node.PostToThreadPool(lambda: self._device_removed.fire(a))
+                    
 
 
     def get_device_names(self):
@@ -181,14 +179,14 @@ class DeviceManagerClient:
                 a=a[0]
                 urls = self._filter_urls(a.urls)
                 if len(urls) > 0:
-                    a_client = self._node.SubscribeService(urls)
-                    try:
-                        self._device_added.fire(a.local_device_name)
-                    except:
-                        traceback.print_exc()
+                    a_client = self._node.SubscribeService(urls)                    
                 else:
                     a_client = None
                 self._active_devices[local_device_name] = (a,a_client)
+                if a_client is not None:
+                    
+                    self._node.PostToThreadPool(lambda: self._device_added.fire(a.local_device_name))
+                    
 
     def connect_device_type(self, device_type):
         with self._lock:
@@ -202,14 +200,14 @@ class DeviceManagerClient:
                     continue
                 urls = self._filter_urls(a0.urls)
                 if len(urls) > 0:
-                    a_client = self._node.SubscribeService(urls)
-                    try:
-                        self._device_added.fire(a0.local_device_name)
-                    except:
-                        traceback.print_exc()
+                    a_client = self._node.SubscribeService(urls)                    
                 else:
                     a_client = None
                 self._active_devices[local_device_name] = (a,a_client)
+                if a_client is not None:
+                    
+                    self._node.PostToThreadPool(lambda: self._device_added.fire(a0.local_device_name))
+                    
 
     @property
     def device_manager(self):
