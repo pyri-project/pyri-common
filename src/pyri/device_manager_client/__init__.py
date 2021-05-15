@@ -128,8 +128,9 @@ class DeviceManagerClient:
                             continue
                         a_client = self._node.SubscribeService(urls)
                         self._active_devices[a.local_device_name] = (a,a_client)
+                        a_name = a.local_device_name
                         
-                        self._node.PostToThreadPool(lambda: self._device_added.fire(a.local_device_name))
+                        self._node.PostToThreadPool(lambda: self._device_added.fire(a_name))
                         
                     else:
                         self._active_devices[a.local_device_name] = (a,None)
