@@ -110,6 +110,7 @@ class PyriSandboxActionRunnerInst:
         except Exception as e:
             with self._parent.lock:
                 self._done(e)
+                raise
         else:
             with self._parent.lock:
                 self._done(None)
