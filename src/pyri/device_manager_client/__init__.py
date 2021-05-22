@@ -4,11 +4,17 @@ import traceback
 import urllib.parse
 import re
 import ipaddress
+import uuid
 
 from RobotRaconteurCompanion.Util.RobustFunctionCaller import RobustPollingAsyncFunctionCaller
+try:
+    import RobotRaconteurCompanion.Util.LocalIdentifiersManager as local_ident_manager
+except:
+    pass
+
 
 class DeviceManagerClient:
-    def __init__(self,device_manager_url: str, node: RR.RobotRaconteurNode = None, autoconnect = True, tcp_ipv4_only = False):
+    def __init__(self,device_manager_url: str = None, device_manager_identifier = None, node: RR.RobotRaconteurNode = None, autoconnect = True, tcp_ipv4_only = False):
         self._lock = threading.RLock()
         if node is None:
             self._node = RR.RobotRaconteurNode.s
@@ -25,8 +31,14 @@ class DeviceManagerClient:
         self._device_added=RR.EventHook()
         self._device_removed=RR.EventHook()
         self._device_updated=RR.EventHook()
-
-        self._device_manager = self._node.SubscribeService(device_manager_url)
+        if device_manager_url is not None:
+            self._device_manager = self._node.SubscribeService(device_manager_url)
+        else:
+            if device_manager_identifier is None:
+                device_manager_identifier = "pyri_device_manager"
+            filter = _DeviceManagerConnectFilter(device_manager_identifier)
+            self._device_manager = self._node.SubscribeServiceByType("tech.pyri.device_manager.DeviceManager", filter.get_filter())
+        
         self._device_manager.ClientConnected += self._device_manager_client_connected
 
         self._poller = RobustPollingAsyncFunctionCaller(self._update_poll_f, (), error_handler=self._poller_err_handler, poll_interval=25, node=self._node)
@@ -238,3 +250,65 @@ class DeviceManagerClient:
 
     def close(self):
         self._poller.close()
+
+class _DeviceManagerConnectFilter:
+    def __init__(self, device_manager_identifier):
+        ident_str, ident_uuid = _parse_identifier(device_manager_identifier)
+
+        assert ident_str is not None, "Invalid device manager identifier specified"
+
+        if ident_uuid is None:
+            try:
+                device_ident_dir = local_ident_manager._get_user_identifier_path().joinpath("device")
+                device_ident_file = device_ident_dir.joinpath(ident_str)
+                if device_ident_file.is_file():
+                    with open(device_ident_file) as f:
+                        ident_data = f.read()
+                    ident_uuid = uuid.UUID(ident_data)                
+            except:
+                traceback.print_exc()
+                pass
+        self.ident_str = ident_str
+        self.ident_uuid = ident_uuid
+
+    def get_filter(self):
+        ret = RR.ServiceSubscriptionFilter()
+        ret.MaxConnections = 10
+        ret.Predicate = self._predicate
+
+        return ret
+
+    def _predicate(self, service_info2):
+        try:
+            d_ident = service_info2.Attributes.get("device",None)
+            if not d_ident:
+                return False
+            d_ident_n, d_ident_id = _parse_identifier(d_ident.data)
+            if d_ident_n is None or d_ident_id is None:
+                return False
+            d_ident_id2 = uuid.UUID(d_ident_id)
+            if self.ident_uuid is not None:
+                return d_ident_n == self.ident_str and d_ident_id2 == self.ident_uuid
+            else:
+                return d_ident_n == self.ident_str
+        except:
+            traceback.print_exc()
+        return False
+
+def _parse_identifier(string_ident):
+    
+    name_regex_str = "(?:[a-zA-Z](?:[a-zA-Z0-9_]*[a-zA-Z0-9])?)(?:\\.[a-zA-Z](?:[a-zA-Z0-9_]*[a-zA-Z0-9])?)*"
+    uuid_regex_str = "\\{?[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}\\}?"
+    identifier_regex = "(?:(" + name_regex_str + ")\\|(" + uuid_regex_str + "))|(" + name_regex_str + ")|(" + uuid_regex_str + ")"
+
+    r_res = re.match(identifier_regex, string_ident)
+    if r_res is None:
+        raise RR.InvalidArgumentException("Invalid identifier string")
+    if r_res.group(1) is not None and r_res.group(2) is not None:
+        return r_res.group(1), r_res.group(2)
+    elif r_res.group(3) is not None:
+        return r_res.group(3), None
+    elif r_res.group(4) is not None:
+        return r_res.group(4)
+
+    assert False, "Internal error parsing device manager identifier"
