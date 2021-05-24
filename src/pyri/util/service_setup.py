@@ -12,7 +12,9 @@ from pyri.plugins import robdef as robdef_plugins
 
 import importlib_resources
 import io
-
+import sys
+import os
+from . import wait_exit
 
 PyriService_NodeSetup_Default_Flags = RR.RobotRaconteurNodeSetupFlags_SERVER_DEFAULT \
     | RR.RobotRaconteurNodeSetupFlags_TCP_TRANSPORT_IPV4_DISCOVERY
@@ -46,7 +48,7 @@ class PyriServiceNodeSetup(RR.RobotRaconteurNodeSetup):
 
             arg_parser.add_argument('--device-manager-url', type=str, default=None,required=False,help="Robot Raconteur URL for device manager service")
             arg_parser.add_argument('--device-manager-identifier', type=str, default=None,required=False,help="Robot Raconteur identifier for device manager service")
-            arg_parser.add_argument("--wait-signal",action='store_const',const=True,default=False, help="wait for SIGTERM or SIGINT (Linux only)")
+            arg_parser.add_argument("--wait-signal",action='store_const',const=True,default=False, help="wait for SIGTERM, SIGINT, or WM_CLOSE")
             arg_parser.add_argument("--pyri-webui-server-port",type=int,default=8000,help="The PyRI WebUI port for websocket origin (default 8000)")
 
             args, _ = arg_parser.parse_known_args()
@@ -105,8 +107,13 @@ class PyriServiceNodeSetup(RR.RobotRaconteurNodeSetup):
                 self._wait_signal = True
             elif wait_signal == True:
                 self._wait_signal = True
-            else:
+            elif wait_signal == False:
                 self._wait_signal = False
+            else:
+                if sys.stdin.isatty():
+                    self._wait_signal = False
+                else:
+                    self._wait_signal = True
 
             if not no_device_manager:
                 self._device_manager = DeviceManagerClient(device_manager_url = args.device_manager_url, device_manager_identifier=args.device_manager_identifier, \
@@ -137,17 +144,19 @@ class PyriServiceNodeSetup(RR.RobotRaconteurNodeSetup):
         return self._argparse_results
 
     def wait_exit(self):
-        if self._wait_signal:
-            #Wait for shutdown signal if running in service mode
-            print("Press Ctrl-C to quit...")
-            import signal
-            signal.sigwait([signal.SIGTERM,signal.SIGINT])
-        else:
-            #Wait for the user to shutdown the service            
-            input("Server started, press enter to quit...")
+        wait_exit.wait_exit(self._wait_signal)
+
+    def wait_exit_callback(self, callback):
+        wait_exit.wait_exit_callback(callback,self._wait_signal)
+
+    def wait_exit_stop_loop(self, loop):
+        wait_exit.wait_exit_stop_loop(loop,self._wait_signal)
 
     def register_service(self, service_name, service_obj_type, service_obj):
         ctx = self.node.RegisterService(service_name, service_obj_type, service_obj)
         ctx.SetServiceAttributes(self._device_attributes)
         return ctx
             
+
+
+
