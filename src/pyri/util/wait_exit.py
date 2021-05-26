@@ -3,42 +3,36 @@ import atexit
 import traceback
 import threading
 
-def wait_exit(wait_signal=True):
-    if wait_signal:
-        #Wait for shutdown signal if running in service mode
-        print("Press Ctrl-C to quit...")
-        if sys.platform == "win32":
-            _win32_wait_exit()
-        else:
-            import signal
-            signal.sigwait([signal.SIGTERM,signal.SIGINT])
-    else:
-        #Wait for the user to shutdown the service            
-        input("Server started, press enter to quit...")
+def wait_exit():
 
-def wait_exit_callback(callback, wait_signal=True):
+    #Wait for shutdown signal if running in service mode
+    print("Press Ctrl-C to quit...")
+    if sys.platform == "win32":
+        _win32_wait_exit()
+    else:
+        import signal
+        signal.sigwait([signal.SIGTERM,signal.SIGINT])
+    
+def wait_exit_callback(callback):
     def t_func():
         try:
-            if wait_signal:
+            
             #Wait for shutdown signal if running in service mode
-                print("Press Ctrl-C to quit...")
-                if sys.platform == "win32":
-                    hwnd = _win32_create_message_hwnd()
-                    def _stop_loop():
-                        _win32_post_hwnd_close(hwnd)
+            print("Press Ctrl-C to quit...")
+            if sys.platform == "win32":
+                hwnd = _win32_create_message_hwnd()
+                def _stop_loop():
+                    _win32_post_hwnd_close(hwnd)
+                try:
+                    atexit.register(_stop_loop)
+                    _win32_wait_message_hwnd(hwnd)
+                finally:
                     try:
-                        atexit.register(_stop_loop)
-                        _win32_wait_message_hwnd(hwnd)
-                    finally:
-                        try:
-                            atexit.unregister(_stop_loop)
-                        except Exception: pass
-                else:
-                    import signal
-                    signal.sigwait([signal.SIGTERM,signal.SIGINT])
+                        atexit.unregister(_stop_loop)
+                    except Exception: pass
             else:
-                #Wait for the user to shutdown the service            
-                input("Server started, press enter to quit...")
+                import signal
+                signal.sigwait([signal.SIGTERM,signal.SIGINT])
         except Exception:
             traceback.print_exc()
         callback()
@@ -47,8 +41,8 @@ def wait_exit_callback(callback, wait_signal=True):
     t.setDaemon(True)
     t.start()
 
-def wait_exit_stop_loop(loop, wait_signal=True): 
-    wait_exit_callback(lambda: loop.call_soon_threadsafe(loop.stop), wait_signal)
+def wait_exit_stop_loop(loop): 
+    wait_exit_callback(lambda: loop.call_soon_threadsafe(loop.stop))
 
 if sys.platform == "win32":
     # https://gist.github.com/mouseroot/6128651

@@ -27,7 +27,7 @@ class PyriServiceNodeSetup(RR.RobotRaconteurNodeSetup):
             node = None, argv = None, rr_config = None, \
             extra_service_defs = [], device_info_type = "com.robotraconteur.device.DeviceInfo", \
             device_info_arg = None, default_info = None, \
-            arg_parser = None, wait_signal = None, \
+            arg_parser = None, \
             display_description="PyRI Generic Service",
             no_standard_robdef = False, no_device_manager = False,
             device_manager_autoconnect = True,
@@ -48,7 +48,6 @@ class PyriServiceNodeSetup(RR.RobotRaconteurNodeSetup):
 
             arg_parser.add_argument('--device-manager-url', type=str, default=None,required=False,help="Robot Raconteur URL for device manager service")
             arg_parser.add_argument('--device-manager-identifier', type=str, default=None,required=False,help="Robot Raconteur identifier for device manager service")
-            arg_parser.add_argument("--wait-signal",action='store_const',const=True,default=False, help="wait for SIGTERM, SIGINT, or WM_CLOSE")
             arg_parser.add_argument("--pyri-webui-server-port",type=int,default=8000,help="The PyRI WebUI port for websocket origin (default 8000)")
 
             args, _ = arg_parser.parse_known_args()
@@ -102,19 +101,7 @@ class PyriServiceNodeSetup(RR.RobotRaconteurNodeSetup):
             device_attributes = attributes_util.GetDefaultServiceAttributesFromDeviceInfo(device_info)
 
             add_default_ws_origins(self.tcp_transport,args.pyri_webui_server_port)
-
-            if args.wait_signal:
-                self._wait_signal = True
-            elif wait_signal == True:
-                self._wait_signal = True
-            elif wait_signal == False:
-                self._wait_signal = False
-            else:
-                if sys.stdin.isatty():
-                    self._wait_signal = False
-                else:
-                    self._wait_signal = True
-
+            
             if not no_device_manager:
                 self._device_manager = DeviceManagerClient(device_manager_url = args.device_manager_url, device_manager_identifier=args.device_manager_identifier, \
                     node = node, autoconnect = device_manager_autoconnect)
@@ -144,13 +131,13 @@ class PyriServiceNodeSetup(RR.RobotRaconteurNodeSetup):
         return self._argparse_results
 
     def wait_exit(self):
-        wait_exit.wait_exit(self._wait_signal)
+        wait_exit.wait_exit()
 
     def wait_exit_callback(self, callback):
-        wait_exit.wait_exit_callback(callback,self._wait_signal)
+        wait_exit.wait_exit_callback(callback)
 
     def wait_exit_stop_loop(self, loop):
-        wait_exit.wait_exit_stop_loop(loop,self._wait_signal)
+        wait_exit.wait_exit_stop_loop(loop)
 
     def register_service(self, service_name, service_obj_type, service_obj):
         ctx = self.node.RegisterService(service_name, service_obj_type, service_obj)
