@@ -731,7 +731,7 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                             var text_name = block.getFieldValue('NAME');
                             var value_value = Blockly.Python.valueToCode(block, 'VALUE', Blockly.Python.ORDER_ATOMIC);
                             // TODO: Assemble Python into code variable.
-                            var code = 'global_variable_set(\\\"' + text_name + '\\\",' + value_value + ')';
+                            var code = 'global_variable_set(\\\"' + text_name + '\\\",' + value_value + ')\\n';
                             return code;
                             };
                             """        
@@ -759,8 +759,8 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                         "NUMBER"
                         ],
                         [
-                        "vector",
-                        "VECTOR"
+                        "array",
+                        "ARRAY"
                         ],
                         [
                         "matrix",
@@ -816,7 +816,7 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                             var dropdown_pers = block.getFieldValue('PERS');
                             var value_reset_value = Blockly.Python.valueToCode(block, 'RESET_VALUE', Blockly.Python.ORDER_ATOMIC);
                             // TODO: Assemble Python into code variable.
-                            var code = '\\n';
+                            var code = 'global_variable_add(' + value_name + ',\"' + dropdown_type + '\",' + value_value + ',\"' + dropdown_pers + '\",' + value_reset_value +  ')\\n';
                             return code;
                             };
                             """        
@@ -845,7 +845,7 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
         python_generator = """Blockly.Python['global_variable_delete'] = function(block) {
                             var text_name = block.getFieldValue('NAME');
                             // TODO: Assemble Python into code variable.
-                            var code = '\\n';
+                            var code = 'global_variable_delete(\\\"' + text_name + '\\\")\\n';
                             return code;
                             };
                             """        

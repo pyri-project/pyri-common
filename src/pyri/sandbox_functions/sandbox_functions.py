@@ -3,10 +3,12 @@ from pyri.sandbox_context import PyriSandboxContext
 import numpy as np
 import time
 import copy
+import RobotRaconteur as RR
 
 import general_robotics_toolbox as rox
 
 from RobotRaconteurCompanion.Util.GeometryUtil import GeometryUtil
+import re
 
 def util_copy(var):
 
@@ -29,8 +31,78 @@ def linalg_vector(string_vector):
 def global_variable_get(global_name):
 
     device_manager = PyriSandboxContext.device_manager
+    var_storage = device_manager.get_device_client("variable_storage", 1)
+    v = var_storage.getf_variable_value("globals",global_name).data
+    if not isinstance(v, np.ndarray):
+        return v
+    var_info = var_storage.getf_variable_info("globals",global_name)
+    var_type = RR.TypeDefinition()
+    var_type.FromString(var_info.datatype)
+    if var_type.ArrayType == RR.DataTypes_ArrayTypes_none:
+        if issubclass(v.dtype.type,np.floating):
+            return float(v[0])
+        elif issubclass(v.dtype.type,np.integer):
+            return int(v[0])
+        return v[0]
+    return v
+    
+
+def global_variable_set(global_name, value):
+
+    device_manager = PyriSandboxContext.device_manager
     var_storage = device_manager.get_device_client("variable_storage", 1)    
-    return var_storage.getf_variable_value("globals",global_name).data
+    var_info = var_storage.getf_variable_info("globals",global_name)
+    var_type = var_info.datatype
+
+    var_value = RR.VarValue(value,var_type)
+    var_storage.setf_variable_value("globals", global_name, var_value)
+
+def global_variable_add(global_name, datatype, value, persistence, reset_value):
+
+    m = re.match("^[a-zA-Z](?:\\w*[a-zA-Z0-9])?$", global_name)
+    assert m, f"Global name \"{global_name}\" is invalid"
+
+    datatype = datatype.lower()
+    if datatype == "number":
+        rr_datatype = "double"
+    elif datatype == "array":
+        rr_datatype = "double[]"
+    elif datatype == "matrix":
+        rr_datatype = "double[*]"
+    elif datatype == "string":
+        rr_datatype = "string"
+    else:
+        assert False, f"Invalid type for new global variable: {datatype}"
+
+    device_manager = PyriSandboxContext.device_manager
+    node = PyriSandboxContext.node
+    var_storage = device_manager.get_device_client("variable_storage", 1)
+
+    var_consts = node.GetConstants('tech.pyri.variable_storage', var_storage)
+    variable_persistence = var_consts["VariablePersistence"]
+    variable_protection_level = var_consts["VariableProtectionLevel"]
+
+    pers = persistence.lower()
+    if pers == "normal":
+        rr_pers = variable_persistence["normal"]
+    elif pers == "temporary":
+        rr_pers = variable_persistence["temporary"]
+    elif pers == "persistent":
+        rr_pers = variable_persistence["persistent"]
+    elif pers == "constant":
+        rr_pers = variable_persistence["constant"]
+    else:
+        assert False, f"Invalid persistence for new global variable: {pers}"
+
+    var_storage.add_variable2("globals", global_name, rr_datatype, RR.VarValue(value, rr_datatype),
+        [],{},rr_pers,RR.VarValue(reset_value,rr_datatype), variable_protection_level["read_write"], [], "User created variable", False)
+
+def global_variable_delete(global_name):
+
+    device_manager = PyriSandboxContext.device_manager
+    var_storage = device_manager.get_device_client("variable_storage", 1)    
+
+    var_storage.delete_variable("globals", global_name)
 
 def _convert_to_pose(a):
     # TODO: Convert named pose, transform, etc to pose
@@ -116,6 +188,9 @@ def _get_sandbox_functions():
         "time_wait_for_completion_all": time_wait_for_completion_all,
         "linalg_vector": linalg_vector,
         "global_variable_get": global_variable_get,
+        "global_variable_set": global_variable_set,
+        "global_variable_add": global_variable_add,
+        "global_variable_delete": global_variable_delete,
         "geometry_pose_new": geometry_pose_new,
         "geometry_pose_component_get": geometry_pose_component_get,
         "geometry_pose_component_set": geometry_pose_component_set,
