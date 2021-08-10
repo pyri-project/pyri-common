@@ -15,6 +15,7 @@ import io
 import sys
 import os
 from . import wait_exit
+import importlib.metadata
 
 PyriService_NodeSetup_Default_Flags = RR.RobotRaconteurNodeSetupFlags_SERVER_DEFAULT \
     | RR.RobotRaconteurNodeSetupFlags_TCP_TRANSPORT_IPV4_DISCOVERY
@@ -31,7 +32,10 @@ class PyriServiceNodeSetup(RR.RobotRaconteurNodeSetup):
             display_description="PyRI Generic Service",
             no_standard_robdef = False, no_device_manager = False,
             device_manager_autoconnect = True,
-            register_plugin_robdef = False):
+            register_plugin_robdef = False,
+            distribution_name = None,
+            version = None
+            ):
 
             # Initialize node setup superclass            
             super().__init__(node_name, tcp_port, flags, allowed_overrides, node, argv, rr_config)
@@ -49,6 +53,12 @@ class PyriServiceNodeSetup(RR.RobotRaconteurNodeSetup):
             arg_parser.add_argument('--device-manager-url', type=str, default=None,required=False,help="Robot Raconteur URL for device manager service")
             arg_parser.add_argument('--device-manager-identifier', type=str, default=None,required=False,help="Robot Raconteur identifier for device manager service")
             arg_parser.add_argument("--pyri-webui-server-port",type=int,default=8000,help="The PyRI WebUI port for websocket origin (default 8000)")
+
+            if version is not None:
+                arg_parser.add_argument('-V', '--version', action='version', version=f'%(prog)s {version}')
+            elif distribution_name is not None:
+                version1 = importlib.metadata.version(distribution_name)
+                arg_parser.add_argument('-V', '--version', action='version', version=f'%(prog)s {version1}')
 
             args, _ = arg_parser.parse_known_args()
             self._argparse_results = args
