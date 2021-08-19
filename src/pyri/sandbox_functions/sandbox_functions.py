@@ -11,24 +11,72 @@ from RobotRaconteurCompanion.Util.GeometryUtil import GeometryUtil
 import re
 
 def util_copy(var):
+    """
+    Copy a local variable value
+
+    Parameters:
+
+    * var (Any): Variable to copy
+    """
 
     # TODO: Restrict which objects can be copied?
     return copy.deepcopy(var)
 
 def time_wait_for_completion(local_device_name, timeout):
+    """
+    Wait for an asynchronous operation to complete for specified
+    device. Raises an error if timeout expires before completion.
+
+    Parameters:
+
+    * local_device_name (str): Name of the device to wait for completion
+    * timeout (float): Wait timeout in seconds
+    """
     PyriSandboxContext.action_runner.wait_for_completion(local_device_name, timeout)
 
 def time_wait_for_completion_all(timeout):
+    """
+    Wait for all asynchronous operations on all devices to complete.
+    Raises an error if timeout expires before completion.
+
+    Parameters:
+
+    * timeout (float): Wait timeout in seconds
+
+    """
     PyriSandboxContext.action_runner.wait_for_completion_all(timeout)
 
 def time_wait(seconds):
-    """Wait for a specified time in seconds"""
+    """
+    Wait for a specified time in seconds.
+    
+    Parameters:
+
+    * seconds (float) Time to wait in seconds
+    
+    """
     time.sleep(seconds)
 
 def linalg_vector(string_vector):
+    """
+    Create a new vector from a formatted string.
+
+    Parameters:
+
+    * string_vector (str): Vector in string format
+    """
     return np.fromstring(string_vector,sep=",").tolist()
 
 def global_variable_get(global_name):
+    """
+    Get the value of a global variable from the global variable table.
+
+    Parameters:
+
+    * global_name (str): The name of the global variable
+
+    Return (Any): The value of the variable.
+    """
 
     device_manager = PyriSandboxContext.device_manager
     var_storage = device_manager.get_device_client("variable_storage", 1)
@@ -48,6 +96,16 @@ def global_variable_get(global_name):
     
 
 def global_variable_set(global_name, value):
+    """
+    Set the value of a global variable in the global variable table. Global
+    variable must already exist, and the specified value must be compatible
+    with the global variable type.
+
+    Parameters:
+
+    * global_name (str): The name of the global variable
+    * value (Any): The new value of the global variable
+    """
 
     device_manager = PyriSandboxContext.device_manager
     var_storage = device_manager.get_device_client("variable_storage", 1)    
@@ -58,6 +116,20 @@ def global_variable_set(global_name, value):
     var_storage.setf_variable_value("globals", global_name, var_value)
 
 def global_variable_add(global_name, datatype, value, persistence, reset_value):
+    """
+    Adds a new variable to the global variable table. The variable must not
+    already exist.
+
+    Parameters:
+
+    * global_name (str): The name of the new global variable. Must match regex `^[a-zA-Z](?:\\w*[a-zA-Z0-9])?$`.
+    * datatype (str): The type of the new variable. May be `number`, `array`, `matrix`, `string`, or
+      a valid Robot Raconteur data type.
+    * value (Any): The new variable value
+    * persistence (str): The persistence of the new variable. May be `normal`, `temporary`,
+      `persistent`, or `constant`.
+    * reset_value (Any): The reset value of the variable. May be `None` for no value.
+    """
 
     m = re.match("^[a-zA-Z](?:\\w*[a-zA-Z0-9])?$", global_name)
     assert m, f"Global name \"{global_name}\" is invalid"
@@ -98,6 +170,13 @@ def global_variable_add(global_name, datatype, value, persistence, reset_value):
         [],{},rr_pers,RR.VarValue(reset_value,rr_datatype), variable_protection_level["read_write"], [], "User created variable", False)
 
 def global_variable_delete(global_name):
+    """
+    Deletes a global variable
+
+    Parameters:
+
+    * global_name (str): The name of the global variable to delete
+    """
 
     device_manager = PyriSandboxContext.device_manager
     var_storage = device_manager.get_device_client("variable_storage", 1)    
@@ -113,6 +192,22 @@ def _convert_to_pose(a):
     return a
 
 def geometry_pose_new(x,y,z,r_r,r_p,r_y):
+    """
+    Create a new pose using XYZ-RPY format. Units are meters and degrees
+
+    Parameters:
+
+    * x (float): X position in meters
+    * y (float): Y position in meters
+    * z (float): Z position in meters
+    * r_r (float): Roll in degrees
+    * r_p (float): Pitch in degrees
+    * r_y (float): Yaw in degrees
+
+    Return (Pose): Pose named array
+    """
+
+
     xyz = np.array([x,y,z],dtype=np.float64)
     rpy = np.deg2rad(np.array([r_r,r_p,r_y],dtype=np.float64))
 
@@ -121,6 +216,17 @@ def geometry_pose_new(x,y,z,r_r,r_p,r_y):
     return geom_util.xyz_rpy_to_pose(xyz,rpy)    
 
 def geometry_pose_component_get(pose, component_name):
+    """
+    Get an XYZ-RPY component of a pose.
+
+    Parameters:
+
+    * pose (Pose): The pose
+    * component_name (str): The component to get. May be `X`, `Y`, `Z`, `R_R`, `R_P`, or `R_Y`
+
+    Return (float): The pose value
+    """
+
     geom_util = GeometryUtil(node = PyriSandboxContext.node)
     xyz,rpy = geom_util.pose_to_xyz_rpy(_convert_to_pose(pose))
     rpy = np.rad2deg(rpy)
@@ -140,6 +246,19 @@ def geometry_pose_component_get(pose, component_name):
     assert False, "Invalid pose component"
 
 def geometry_pose_component_set(pose, component_name, value):
+    """
+    Set an XYZ-RPY component of a pose. This function does not modify in place.
+    It returns a new pose.
+
+    Parameters:
+
+    * pose (Pose): The pose
+    * component_name (str): The component to get. May be `X`, `Y`, `Z`, `R_R`, `R_P`, or `R_Y`
+    * value (float): The new pose component value in meters or degrees
+
+    Return (Pose): The new pose with updated value
+
+    """
     geom_util = GeometryUtil(node = PyriSandboxContext.node)
     xyz,rpy = geom_util.pose_to_xyz_rpy(_convert_to_pose(pose))
     rpy = np.rad2deg(rpy)
@@ -163,6 +282,18 @@ def geometry_pose_component_set(pose, component_name, value):
     return geom_util.xyz_rpy_to_pose(xyz,rpy)
 
 def geometry_pose_multiply(pose_a, pose_b):
+    """
+    Multiply one pose with another
+
+    Parameters:
+
+    * pose_a (Pose): The first pose
+    * pose_b (Pose): The second pose
+
+    Return (Pose): The result of the multiplication
+    """
+
+
     geom_util = GeometryUtil(node = PyriSandboxContext.node)
     T_a = geom_util.pose_to_rox_transform(_convert_to_pose(pose_a))
     T_b = geom_util.pose_to_rox_transform(_convert_to_pose(pose_b))
@@ -170,16 +301,43 @@ def geometry_pose_multiply(pose_a, pose_b):
     return geom_util.rox_transform_to_pose(T_res)
 
 def geometry_pose_inv(pose):
+    """
+    Invert a pose
+
+    Parameters:
+
+    pose (Pose): The pose to invert
+
+    Return (Pose): The inverted pose
+    """
     geom_util = GeometryUtil(node = PyriSandboxContext.node)
     T_rox = geom_util.pose_to_rox_transform(_convert_to_pose(pose))
     T_res = T_rox.inv()
     return geom_util.rox_transform_to_pose(T_res)
 
 def proc_result_get():
+    """
+    Return the current procedure result. This result is used
+    by the main program state machine to determine the next step.
+
+    Return (str): The current result. Default is `DEFAULT`
+    """
+
+
     return PyriSandboxContext.proc_result
 
 def proc_result_set(result):
+    """
+    Set the current procedure result. This result is used
+    by the main program state machine to determine the next step.
+
+    Parameters:
+
+    * result (str): The new procedure result
+    """
+
     PyriSandboxContext.proc_result = result
+    
 
 def _get_sandbox_functions():
     return {
