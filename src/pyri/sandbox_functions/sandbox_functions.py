@@ -6,6 +6,7 @@ import copy
 import RobotRaconteur as RR
 
 import general_robotics_toolbox as rox
+import json
 
 from RobotRaconteurCompanion.Util.GeometryUtil import GeometryUtil
 import re
@@ -64,8 +65,501 @@ def linalg_vector(string_vector):
     Parameters:
 
     * string_vector (str): Vector in string format
+
+    Return (array): The parsed array
     """
     return np.fromstring(string_vector,sep=",").tolist()
+
+def linalg_matrix(string_matrix):
+    """
+    Create a new matrix from formatted string
+
+    Parameters:
+
+    * string_matrix (str): Matrix in string format
+
+    Return (matrix): The parsed matrix
+    """
+
+    matrix_list = json.loads(string_matrix)
+    matrix_np = np.array(matrix_list, dtype=np.float64)
+    assert matrix_np.ndim == 1 or matrix_np.ndim == 2, "Matrix must be 1 or 2 dimensionsal"
+    return matrix_np
+
+def linalg_fill_vector(length, value):
+    """
+    Create a new vector filled with specified value
+
+    Parameters:
+
+    * length (int): Length of new vector
+    * value (number): The value to fill array
+
+    Return (array): The filled vector
+    """
+
+    return np.full((length),value,dtype=np.float64)
+
+def linalg_fill_matrix(m, n, value):
+    """
+    Create a new matrix filled with specified value
+
+    Parameters:
+
+    * m (int): Number of rows of new matrix
+    * n (int): Number of columns of new matrix
+    * value (number): The value to fill matrix
+
+    Return (matrix): The filled matrix
+    """
+
+    return np.full((m,n),value,dtype=np.float64)
+
+def linalg_mat_transpose(matrix):
+    """
+    Compute transpose of matrix
+
+    Parameters:
+
+    * matrix (matrix): The matrix to transpose
+
+    Return (matrix): The transpose of the matrix
+    """
+
+    return np.transpose(matrix)
+
+def linalg_mat_inv(matrix):
+    """
+    Compute multiplicative inverse of matrix
+
+    Parameters:
+
+    * matrix (matrix): The matrix to invert
+
+    Return (matrix): The inverse of the matrix
+    """
+
+    return np.linalg.inv(matrix)
+
+def linalg_negative(a):
+    """
+    Negate vector or matrix
+
+    Parameters:
+
+    * a (array or matrix): The input to invert
+
+    Return (array or matrix): The negated input
+    """
+
+    return np.negative(a)
+
+def linalg_mat_det(matrix):
+    """
+    Compute determinant of matrix
+
+    Parameters:
+
+    * matrix (matrix): The matrix
+
+    Return (number): The determinant of the matrix
+    """
+
+    return np.linalg.det(matrix)
+
+def linalg_mat_conj(matrix):
+    """
+    Compute conjugate transpose of matrix
+
+    Parameters:
+
+    * matrix (matrix): The input matrix
+
+    Return (matrix): The conjugate of the matrix
+    """
+
+    return np.conjugate(matrix).T
+
+def linalg_mat_eigenvalues(matrix):
+    """
+    Compute eigenvalues of matrix
+
+    Parameters:
+
+    * matrix (matrix): The input matrix
+
+    Return (array): The eigenvalues of the matrix
+    """
+
+    return np.linalg.eigvals(matrix)
+
+def linalg_mat_eigenvectors(matrix):
+    """
+    Compute eigenvectors of matrix
+
+    Parameters:
+
+    * matrix (matrix): The input matrix
+
+    Return (List[array]): The eigenvectors of the matrix
+    """
+
+    w,v = np.linalg.eig(matrix)
+    return v
+
+def linalg_min(a):
+    """
+    Find minimum value in vector or matrix
+
+    Parameters:
+
+    * a (array or matrix): The input to search
+
+    Return (number): The minimum value
+    """
+
+    return np.min(a)
+
+def linalg_max(a):
+    """
+    Find maximum value in vector or matrix
+
+    Parameters:
+
+    * a (array or matrix): The input to search
+
+    Return (number): The maximum value
+    """
+
+    return np.max(a)
+
+def linalg_argmin(a):
+    """
+    Find the indices of the minimum value in vector or matrix
+
+    Parameters:
+
+    * a (array or matrix): The input to search
+
+    Return (number or array): The minimum value indices
+    """
+
+    x = np.argmin(a).tolist()
+    if len(x) == 1:
+        return int(x[0])
+    return x
+
+def linalg_argmax(a):
+    """
+    Find the indices of the maximum value in vector or matrix
+
+    Parameters:
+
+    * a (array or matrix): The input to search
+
+    Return (number or array): The minimum value indices
+    """
+
+    x = np.argmax(a).tolist()
+    if len(x) == 1:
+        return int(x[0])
+    return x
+
+def linalg_mat_pinv(matrix):
+    """
+    Compute Moore-Penrose pseudo-inverse of matrix
+
+    Parameters:
+
+    * matrix (matrix): The matrix to invert
+
+    Return (matrix): The inverse of the matrix
+    """
+
+    return np.linalg.pinv(matrix)
+
+def linalg_mat_trace(matrix):
+    """
+    Compute the trace of matrix
+
+    Parameters:
+
+    * matrix (matrix): The matrix
+
+    Return (number): The trace of the matrix
+    """
+
+    return np.trace(matrix)
+
+def linalg_mat_diag(matrix):
+    """
+    Compute the diagonal of matrix
+
+    Parameters:
+
+    * matrix (matrix): The matrix
+
+    Return (array): The diagonal of the matrix
+    """
+
+    return np.trace(matrix)
+
+def linalg_hat(a):
+    """
+    Construct skew-symmetric matrix from vector
+
+    Parameters:
+
+    * a (array): The 3 element vector
+
+    Return (matrix): The skew symmetric matrix
+    """
+
+    a1 = np.array(a,dtype=np.float64)
+    assert a1.shape == (3,)
+    a = a1[0]
+    b = a1[1]
+    c = a1[2]
+    return [[0,-c,b],[c,0,-a],[-b,a,0]]
+
+def linalg_sum(a):
+    """
+    Sum all elements in vector or matrix
+
+    Parameters:
+
+    * a (array or matrix): The input to sum
+
+    Return (number): The sum of all elements
+    """
+
+    return np.sum(a)
+
+def linalg_multiply(a):
+    """
+    Multiple all elements in vector or matrix
+
+    Parameters:
+
+    * a (array or matrix): The input to multiply
+
+    Return (number): The product of all elements
+    """
+
+    return np.prod(a)
+
+def linalg_mat_add(a,b):
+    """
+    Add two matrices
+
+    Parameters:
+
+    a (matrix): The first matrix
+    b (matrix): The second matrix
+
+    Return (matrix): The sum of the two matrices    
+    """
+
+    return np.add(a,b)
+
+def linalg_mat_subtract(a,b):
+    """
+    Subtract two matrices
+
+    Parameters:
+
+    a (matrix): The first matrix
+    b (matrix): The second matrix
+
+    Return (matrix): The result of (a-b)
+    """
+
+    return np.subtract(a,b)
+
+def linalg_mat_multiply(a,b):
+    """
+    Multiply two matrices
+
+    Parameters:
+
+    a (matrix): The first matrix
+    b (matrix): The second matrix
+
+    Return (matrix): The matrix product of ab
+    """
+
+    return np.matmul(a,b)
+
+def linalg_elem_add(a,b):
+    """
+    Add matrices/vectors a and b elementwise
+
+    Parameters:
+
+    a (array or matrix): The first operand
+    b (array or matrix): The second operand
+
+    Return (array or matrix): The sum of the operands
+
+    """
+
+    return np.add(a,b)
+
+def linalg_elem_subtract(a,b):
+    """
+    Subtract matrices/vectors b from a elementwise
+
+    Parameters:
+
+    a (array or matrix): The first operand
+    b (array or matrix): The second operand
+
+    Return (array or matrix): The elementwise result of (a-b)
+
+    """
+
+    return np.subtract(a,b)
+
+def linalg_elem_multiply(a,b):
+    """
+    Multiply matrices/vectors a and b elementwise
+
+    Parameters:
+
+    a (array or matrix): The first operand
+    b (array or matrix): The second operand
+
+    Return (array or matrix): The elementwise product of the operands
+
+    """
+
+    return np.multiply(a,b)
+
+def linalg_elem_divide(a,b):
+    """
+    Divide matrices/vectors a by b elementwise
+
+    Parameters:
+
+    a (array or matrix): The first operand
+    b (array or matrix): The second operand
+
+    Return (array or matrix): The elementwise quotient of the operands
+
+    """
+
+    return np.divide(a,b)
+
+def linalg_dot(a,b):
+    """
+    Compute cross product of a and b
+
+    Parameters:
+
+    a (array): The first operand
+    b (array: The second operand
+
+    Return (array): The result of a cross b
+
+    """
+
+    return np.cross(a,b)
+
+def linalg_mat_solve(A,b):
+    """
+    Solve Ax = b for x, given A and b
+
+    Parameters:
+
+    A (matrix): The matrix
+    b (array): The vector
+
+    Return (matrix): The solution for x
+    """
+
+    return np.linalg.solve(A,b)
+
+def linalg_vector_get_elem(a, n):
+    """
+    Return vector element n
+
+    Parameters:
+
+    a (array): The vector
+    n (int): The index
+
+    Return (number): a[n]    
+    """
+
+    return a[n]
+
+def linalg_vector_len(a):
+    """
+    Return length of vector
+
+    Parameters:
+
+    a (array): The vector
+
+    Return (number): The length of vector    
+    """
+
+    return len(a)
+
+def linalg_vector_set_elem(a, n, v):
+    """
+    Set vector element n to v
+
+    Parameters:
+
+    a (array): The vector
+    n (int): The index
+    v (number): The new value
+    """
+
+    a[n] = v
+
+def linalg_matrix_get_elem(a, m, n):
+    """
+    Return matrix element m, n
+
+    Parameters:
+
+    a (array): The vector
+    m (int): The row index
+    n (int): The column index
+
+    Return (number): a[m,n]    
+    """
+
+    return a[m,n]
+
+def linalg_matrix_set_elem(a, m, n, v):
+    """
+    Set matrix element m, n
+
+    Parameters:
+
+    a (array): The vector
+    m (int): The row index
+    n (int): The column index
+    v (float): The new value
+    """
+
+    a[m,n] = v
+
+def linalg_matrix_size(a):
+    """
+    Return matrix size
+
+    Parameters:
+
+    a (array): The vector
+
+    Return (array): [m,n] size of matrix
+    """
+
+    return a.shape
 
 def global_variable_get(global_name):
     """
@@ -345,6 +839,41 @@ def _get_sandbox_functions():
         "time_wait_for_completion": time_wait_for_completion,
         "time_wait_for_completion_all": time_wait_for_completion_all,
         "linalg_vector": linalg_vector,
+        "linalg_matrix": linalg_matrix,
+        "linalg_fill_vector": linalg_fill_vector,
+        "linalg_fill_matrix": linalg_fill_matrix,
+        "linalg_mat_transpose": linalg_mat_transpose,
+        "linalg_mat_inv": linalg_mat_inv,
+        "linalg_negative": linalg_negative,
+        "linalg_mat_det": linalg_mat_det,
+        "linalg_mat_conj": linalg_mat_conj,
+        "linalg_mat_eigenvalues": linalg_mat_eigenvalues,
+        "linalg_mat_eigenvectors": linalg_mat_eigenvectors,
+        "linalg_min": linalg_min,
+        "linalg_max": linalg_max,
+        "linalg_argmin": linalg_argmin,
+        "linalg_argmax": linalg_argmax,
+        "linalg_mat_pinv": linalg_mat_pinv,
+        "linalg_mat_trace": linalg_mat_trace,
+        "linalg_mat_diag": linalg_mat_diag,
+        "linalg_hat": linalg_hat,
+        "linalg_sum": linalg_sum,
+        "linalg_multiply": linalg_multiply,
+        "linalg_mat_add": linalg_mat_add,
+        "linalg_mat_subtract": linalg_mat_subtract,
+        "linalg_mat_multiply": linalg_mat_multiply,
+        "linalg_elem_add": linalg_elem_add,
+        "linalg_elem_subtract": linalg_elem_subtract,
+        "linalg_elem_multiply": linalg_elem_multiply,
+        "linalg_elem_divide": linalg_elem_divide,
+        "linalg_dot": linalg_dot,
+        "linalg_mat_solve": linalg_mat_solve,
+        "linalg_vector_get_elem": linalg_vector_get_elem,
+        "linalg_vector_set_elem": linalg_vector_set_elem,
+        "linalg_vector_len": linalg_vector_len,
+        "linalg_matrix_get_elem": linalg_matrix_get_elem,
+        "linalg_matrix_set_elem": linalg_matrix_set_elem,
+        "linalg_matrix_size": linalg_matrix_size,
         "global_variable_get": global_variable_get,
         "global_variable_set": global_variable_set,
         "global_variable_add": global_variable_add,
