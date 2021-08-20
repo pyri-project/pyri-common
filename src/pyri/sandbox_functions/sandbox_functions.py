@@ -243,8 +243,9 @@ def linalg_argmin(a):
 
     Return (number or array): The minimum value indices
     """
-
-    x = np.argmin(a).tolist()
+    
+    a1=np.array(a, dtype=np.float64)
+    x = np.unravel_index(np.argmin(a1, axis=None), a1.shape)
     if len(x) == 1:
         return int(x[0])
     return x
@@ -260,7 +261,8 @@ def linalg_argmax(a):
     Return (number or array): The minimum value indices
     """
 
-    x = np.argmax(a).tolist()
+    a1=np.array(a, dtype=np.float64)
+    x = np.unravel_index(np.argmax(a1, axis=None), a1.shape)
     if len(x) == 1:
         return int(x[0])
     return x
@@ -302,7 +304,7 @@ def linalg_mat_diag(matrix):
     Return (array): The diagonal of the matrix
     """
 
-    return np.trace(matrix)
+    return np.diag(matrix)
 
 def linalg_hat(a):
     """
@@ -452,6 +454,21 @@ def linalg_elem_divide(a,b):
 
 def linalg_dot(a,b):
     """
+    Compute dot product of a and b
+
+    Parameters:
+
+    a (array): The first operand
+    b (array: The second operand
+
+    Return (array): The result of a dot b
+
+    """
+
+    return np.dot(a,b)
+
+def linalg_cross(a,b):
+    """
     Compute cross product of a and b
 
     Parameters:
@@ -508,7 +525,8 @@ def linalg_vector_len(a):
 
 def linalg_vector_set_elem(a, n, v):
     """
-    Set vector element n to v
+    Set vector element n to v. Returns copy of matrix
+    with change.
 
     Parameters:
 
@@ -516,8 +534,9 @@ def linalg_vector_set_elem(a, n, v):
     n (int): The index
     v (number): The new value
     """
-
-    a[n] = v
+    a1 = a.copy()
+    a1[n] = v
+    return a1
 
 def linalg_matrix_get_elem(a, m, n):
     """
@@ -536,7 +555,8 @@ def linalg_matrix_get_elem(a, m, n):
 
 def linalg_matrix_set_elem(a, m, n, v):
     """
-    Set matrix element m, n
+    Set matrix element m, n. Returns copy
+    of matrix with change
 
     Parameters:
 
@@ -545,8 +565,9 @@ def linalg_matrix_set_elem(a, m, n, v):
     n (int): The column index
     v (float): The new value
     """
-
-    a[m,n] = v
+    a1 = a.copy()
+    a1[m,n] = v
+    return a1
 
 def linalg_matrix_size(a):
     """
@@ -867,6 +888,7 @@ def _get_sandbox_functions():
         "linalg_elem_multiply": linalg_elem_multiply,
         "linalg_elem_divide": linalg_elem_divide,
         "linalg_dot": linalg_dot,
+        "linalg_cross": linalg_cross,
         "linalg_mat_solve": linalg_mat_solve,
         "linalg_vector_get_elem": linalg_vector_get_elem,
         "linalg_vector_set_elem": linalg_vector_set_elem,

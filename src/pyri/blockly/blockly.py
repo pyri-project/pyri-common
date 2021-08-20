@@ -192,7 +192,7 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                 "helpUrl": ""
                 }""",
         python_generator = """Blockly.Python['linalg_fill_vector'] = function(block) {
-                            var number_m = block.getFieldValue('M');
+                            var number_m = Blockly.Python.valueToCode(block, 'M', Blockly.Python.ORDER_ATOMIC);
                             var value_value = Blockly.Python.valueToCode(block, 'VALUE', Blockly.Python.ORDER_ATOMIC);
                             // TODO: Assemble Python into code variable.
                             var code = 'linalg_fill_vector(' + number_m + ',' + value_value + ')';
@@ -240,7 +240,7 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                         var value_n = Blockly.Python.valueToCode(block, 'N', Blockly.Python.ORDER_ATOMIC);
                         var value_value = Blockly.Python.valueToCode(block, 'VALUE', Blockly.Python.ORDER_ATOMIC);
                         // TODO: Assemble Python into code variable.
-                        var code = 'linalg_fill_matrix(' + number_m + ',' + number_n + ',' + value_value + ')';
+                        var code = 'linalg_fill_matrix(' + value_m + ',' + value_n + ',' + value_value + ')';
                         // TODO: Change ORDER_NONE to the correct strength.
                         return [code, Blockly.Python.ORDER_NONE];
                         };
@@ -271,27 +271,19 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                         "NEGATIVE"
                         ],
                         [
-                        "det",
-                        "DETERMINATE"
+                        "determinant",
+                        "DETERMINANT"
                         ],
                         [
                         "conjugate",
                         "CONJUGATE"
                         ],
                         [
-                        "adjoint",
-                        "ADJOINT"
-                        ],
-                        [
-                        "cofactor",
-                        "COFACTOR"
-                        ],
-                        [
-                        "eigen values",
+                        "eigenvalues",
                         "EIGENVALUES"
                         ],
                         [
-                        "eigen vectors",
+                        "eigenvectors",
                         "EIGENVECTORS"
                         ],
                         [
@@ -315,6 +307,14 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                         "PINV"
                         ],
                         [
+                        "trace",
+                        "TRACE"
+                        ],
+                        [
+                        "diag",
+                        "DIAG"
+                        ],
+                        [
                         "hat",
                         "HAT"
                         ],
@@ -323,8 +323,8 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                         "SUM"
                         ],
                         [
-                        "prod",
-                        "PROD"
+                        "multiply",
+                        "MULTIPLY"
                         ]
                     ]
                     },
@@ -339,10 +339,65 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                 "helpUrl": ""
                 }""",
         python_generator = """Blockly.Python['linalg_unary_op'] = function(block) {
-                            var dropdown_op = block.getFieldValue('OP');
+                            var op = block.getFieldValue('OP');
                             var value_input = Blockly.Python.valueToCode(block, 'INPUT', Blockly.Python.ORDER_ATOMIC);
                             // TODO: Assemble Python into code variable.
-                            var code = 'null';
+                            switch (op) {
+                                case 'TRANSPOSE':
+                                    op_func = 'linalg_mat_transpose';
+                                    break;
+                                case 'INVERSE':
+                                    op_func = 'linalg_mat_inv';
+                                    break;
+                                case 'NEGATIVE':
+                                    op_func = 'linalg_negative';
+                                    break;
+                                case 'DETERMINANT':
+                                    op_func = 'linalg_mat_det';
+                                    break;
+                                case 'CONJUGATE':
+                                    op_func = 'linalg_mat_conj';
+                                    break;
+                                case 'EIGENVALUES':
+                                    op_func = 'linalg_mat_eigenvalues';
+                                    break;
+                                case 'EIGENVECTORS':
+                                    op_func = 'linalg_mat_eigenvectors';
+                                    break;
+                                case 'MIN':
+                                    op_func = 'linalg_min';
+                                    break;
+                                case 'MAX':
+                                    op_func = 'linalg_max';
+                                    break;
+                                case 'ARGMIN':
+                                    op_func = 'linalg_argmin';
+                                    break;
+                                case 'ARGMAX':
+                                    op_func = 'linalg_argmax';
+                                    break;
+                                case 'PINV':
+                                    op_func = 'linalg_mat_pinv';
+                                    break;
+                                case 'TRACE':
+                                    op_func = 'linalg_mat_trace';
+                                    break;
+                                case 'DIAG':
+                                    op_func = 'linalg_mat_diag';
+                                    break;
+                                case 'HAT':
+                                    op_func = 'linalg_hat';
+                                    break;
+                                case 'SUM':
+                                    op_func = 'linalg_sum';
+                                    break;
+                                case 'MULTIPLY':
+                                    op_func = 'linalg_multiply';
+                                    break;
+                                default:
+                                    throw Error('Unknown linalg operator: ' + op);                                
+                            }
+                            var code = op_func + '(' + value_input + ')';
                             // TODO: Change ORDER_NONE to the correct strength.
                             return [code, Blockly.Python.ORDER_NONE];
                             };
@@ -367,7 +422,7 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                     "options": [
                         [
                         "matrix add",
-                        "MATRIXSUM"
+                        "MATRIXADD"
                         ],
                         [
                         "matrix subtract",
@@ -404,14 +459,6 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                         [
                         "matrix solve",
                         "MATRIXSOLVE"
-                        ],
-                        [
-                        "diag",
-                        "DIAG"
-                        ],
-                        [
-                        "trace",
-                        "TRACE"
                         ]
                     ]
                     },
@@ -430,10 +477,44 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                 }""",
         python_generator = """Blockly.Python['linalg_binary_op'] = function(block) {
                             var value_a = Blockly.Python.valueToCode(block, 'A', Blockly.Python.ORDER_ATOMIC);
-                            var dropdown_op = block.getFieldValue('OP');
+                            var op = block.getFieldValue('OP');
                             var value_b = Blockly.Python.valueToCode(block, 'B', Blockly.Python.ORDER_ATOMIC);
                             // TODO: Assemble Python into code variable.
-                            var code = 'null';
+                            switch (op) {
+                                case 'MATRIXADD':
+                                    op_func='linalg_mat_add';
+                                    break;
+                                case 'MATRIXSUB':
+                                    op_func='linalg_mat_subtract';
+                                    break;
+                                case 'MATRIXMULT':
+                                    op_func='linalg_mat_multiply';
+                                    break;
+                                case 'ELEMENTADD':
+                                    op_func='linalg_elem_add';
+                                    break;
+                                case 'ELEMENTSUB':
+                                    op_func='linalg_elem_subtract';
+                                    break;
+                                case 'ELEMENTMULT':
+                                    op_func='linalg_elem_multiply';
+                                    break;
+                                case 'ELEMENTDIV':
+                                    op_func='linalg_elem_divide';
+                                    break;
+                                case 'DOT':
+                                    op_func='linalg_dot';
+                                    break;
+                                case 'CROSS':
+                                    op_func='linalg_cross';
+                                    break;
+                                case 'MATRIXSOLVE':
+                                    op_func='linalg_mat_solve';
+                                    break;
+                                default:
+                                    throw Error('Unknown linalg operator: ' + op);
+                            }
+                            var code = op_func + '(' + value_a + ',' + value_b + ')';
                             // TODO: Change ORDER_NONE to the correct strength.
                             return [code, Blockly.Python.ORDER_NONE];
                             };
@@ -470,7 +551,7 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                             var value_vector = Blockly.Python.valueToCode(block, 'VECTOR', Blockly.Python.ORDER_ATOMIC);
                             var value_m = Blockly.Python.valueToCode(block, 'M', Blockly.Python.ORDER_ATOMIC);
                             // TODO: Assemble Python into code variable.
-                            var code = 'null';
+                            var code = 'linalg_vector_get_elem(' + value_vector + ',' + value_m + ')';
                             // TODO: Change ORDER_NONE to the correct strength.
                             return [code, Blockly.Python.ORDER_NONE];
                             };
@@ -514,7 +595,7 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                             var value_m = Blockly.Python.valueToCode(block, 'M', Blockly.Python.ORDER_ATOMIC);
                             var value_value = Blockly.Python.valueToCode(block, 'VALUE', Blockly.Python.ORDER_ATOMIC);
                             // TODO: Assemble Python into code variable.
-                            var code = 'null';
+                            var code = 'linalg_vector_set_elem(' + value_vector + ',' + value_m + ',' + value_value + ')';
                             // TODO: Change ORDER_NONE to the correct strength.
                             return [code, Blockly.Python.ORDER_NONE];
                             }
@@ -543,7 +624,7 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
         python_generator = """Blockly.Python['linalg_vector_length'] = function(block) {
                             var value_vector = Blockly.Python.valueToCode(block, 'VECTOR', Blockly.Python.ORDER_ATOMIC);
                             // TODO: Assemble Python into code variable.
-                            var code = 'null'
+                            var code = 'linalg_vector_len(' + value_vector + ')';
                             // TODO: Change ORDER_NONE to the correct strength.
                             return [code, Blockly.Python.ORDER_NONE];
                             };
@@ -587,7 +668,7 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                             var value_m = Blockly.Python.valueToCode(block, 'M', Blockly.Python.ORDER_ATOMIC);
                             var value_n = Blockly.Python.valueToCode(block, 'N', Blockly.Python.ORDER_ATOMIC);
                             // TODO: Assemble Python into code variable.
-                            var code = 'null';
+                            var code = 'linalg_matrix_get_elem(' + value_matrix + ',' + value_m + ',' + value_n + ')';
                             // TODO: Change ORDER_NONE to the correct strength.
                             return [code, Blockly.Python.ORDER_NONE];
                             };
@@ -637,7 +718,7 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
             var value_n = Blockly.Python.valueToCode(block, 'N', Blockly.Python.ORDER_ATOMIC);
             var value_value = Blockly.Python.valueToCode(block, 'VALUE', Blockly.Python.ORDER_ATOMIC);
             // TODO: Assemble Python into code variable.
-            var code = 'return null;';
+            var code = 'linalg_matrix_set_elem(' + value_matrix + ',' + value_m + ',' + value_n + ',' + value_value + ')';
             // TODO: Change ORDER_NONE to the correct strength.
             return [code, Blockly.Python.ORDER_NONE];
             };
@@ -666,7 +747,7 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
         python_generator = """Blockly.Python['linalg_matrix_size'] = function(block) {
                             var value_matrix = Blockly.Python.valueToCode(block, 'MATRIX', Blockly.Python.ORDER_ATOMIC);
                             // TODO: Assemble Python into code variable.
-                            var code = 'null'
+                            var code = 'linalg_matrix_size(' + value_matrix + ')';
                             // TODO: Change ORDER_NONE to the correct strength.
                             return [code, Blockly.Python.ORDER_NONE];
                             };
