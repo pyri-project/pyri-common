@@ -12,7 +12,7 @@ import json
 
 class PyriBlocklyCategory(NamedTuple):
     name: str
-    json: str
+    blockly_json: dict
 
 class PyriBlocklyBlockArgumentInterpretation:
     DEFAULT = "default"
@@ -200,6 +200,27 @@ def blockly_block_to_json(pyri_blockly_block):
 
 def blockly_block_from_json(block_json):
     return typedload.load(block_json, PyriBlocklyBlock)
+
+def add_blockly_category(blockly_categories: Dict[str,"PyriBlocklyCategory"], name: str = None, colour: int = None, blockly_json: dict = None):
+    assert blockly_json or name, "Both name and blockly_json cannot be null"
+    if not blockly_json:
+        blockly_json = {"kind": "category", "name": name}
+        if colour:
+            blockly_json["colour"] = colour
+    else:
+        name = blockly_json["name"]
+
+    catdef = PyriBlocklyCategory(name = name, blockly_json = blockly_json)
+    if blockly_categories is not None:
+        blockly_categories[name] = catdef
+    return catdef
+
+def blockly_category_to_json(pyri_blockly_category):
+    return typedload.dump(pyri_blockly_category)
+
+def blockly_block_from_json(category_json):
+    return typedload.load(category_json, PyriBlocklyCategory)
+
 
 
 class PyriBlocklyPluginFactory:

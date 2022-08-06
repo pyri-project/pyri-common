@@ -1,6 +1,6 @@
 from ast import arg
 from pyri.plugins.blockly import PyriBlocklyPluginFactory, PyriBlocklyBlock, PyriBlocklyCategory, add_blockly_block, \
-    PyriBlocklyBlockArgument, PyriBlocklyBlockFunctionSelector
+    PyriBlocklyBlockArgument, PyriBlocklyBlockFunctionSelector, add_blockly_category
 from pyri.plugins.blockly import PyriBlocklyBlockArgumentInterpretation as argtype
 from typing import List, Dict, NamedTuple, TYPE_CHECKING
 from ..sandbox_functions import sandbox_functions
@@ -967,28 +967,12 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
 
 def _get_categories() -> Dict[str,PyriBlocklyCategory]:
     categories = {}
-    categories["Util"] = PyriBlocklyCategory(
-        name = "Util",
-        json = '{"kind": "category", "name": "Util", "colour": 330 }'
-    )
-    categories["Globals"] = PyriBlocklyCategory(
-        name = "Globals",
-        json = '{"kind": "category", "name": "Globals", "colour": 330 }'
-    )
-    categories["Time"] = PyriBlocklyCategory(
-        name = "Time",
-        json = '{"kind": "category", "name": "Time", "colour": 65 }'
-    )
-
-    categories["Linalg"] = PyriBlocklyCategory(
-        name ="Linalg",
-        json = '{"kind": "category", "name": "Linalg", "colour": 230 }'
-    )
-
-    categories["Geometry"] = PyriBlocklyCategory(
-        name = "Geometry",
-        json = '{"kind": "category", "name": "Geometry", "colour": 230}'
-    )
+    
+    add_blockly_category(categories, "Util", 330)
+    add_blockly_category(categories, "Globals", 330)
+    add_blockly_category(categories, "Time", 65)
+    add_blockly_category(categories, "Linalg", 230)
+    add_blockly_category(categories, "Geometry", 230)
 
     return categories
 
