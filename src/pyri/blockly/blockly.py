@@ -1,14 +1,16 @@
-from pyri.plugins.blockly import PyriBlocklyPluginFactory, PyriBlocklyBlock, PyriBlocklyCategory
+from ast import arg
+from pyri.plugins.blockly import PyriBlocklyPluginFactory, PyriBlocklyBlock, PyriBlocklyCategory, add_blockly_block, \
+    PyriBlocklyBlockArgument, PyriBlocklyBlockFunctionSelector, add_blockly_category
+from pyri.plugins.blockly import PyriBlocklyBlockArgumentInterpretation as argtype
 from typing import List, Dict, NamedTuple, TYPE_CHECKING
+from ..sandbox_functions import sandbox_functions
 
 def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
     blocks = {}
-
-    blocks["time_wait"] = PyriBlocklyBlock(
-        name = "time_wait",
+    
+    add_blockly_block(blocks,
         category = "Time",
-        doc = "Wait a specified number of seconds",
-        json = """{
+        blockly_json = {
                 "type": "time_wait",
                 "message0": "Wait %1 seconds",
                 "args0": [
@@ -19,28 +21,19 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                     "min": 0
                     }
                 ],
-                "previousStatement": null,
-                "nextStatement": null,
+                "previousStatement": None,
+                "nextStatement": None,
                 "colour": 65,
-                "tooltip": "",
+                "tooltip": "Wait a specified number of seconds",
                 "helpUrl": ""
-                }""",
-        python_generator = """Blockly.Python['time_wait'] = function(block) {
-                            var number_wait_time = block.getFieldValue('WAIT_TIME');
-                            
-                            var code = 'time_wait(' + number_wait_time+ ')\\n';
-                            return code;
-                            };
-                            """
-        
+                },
+
+        sandbox_function=(sandbox_functions.time_wait,"WAIT_TIME")
     )
 
-    blocks["time_wait_for_completion"] = PyriBlocklyBlock(
-        name = "time_wait_for_completion",
+    add_blockly_block(blocks,
         category = "Time",
-        doc = "Wait for device action to complete with timeout specified in seconds",
-        json = """
-                {
+        blockly_json = {
                 "type": "time_wait_for_completion",
                 "message0": "wait for device %1 action to complete with %2 second timeout",
                 "args0": [
@@ -57,30 +50,18 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                     "max": 3600
                     }
                 ],
-                "previousStatement": null,
-                "nextStatement": null,
+                "previousStatement": None,
+                "nextStatement": None,
                 "colour": 65,
-                "tooltip": "Wait for device action to complete",
+                "tooltip": "Wait for device action to complete with timeout specified in seconds",
                 "helpUrl": ""
-                }
-                """,
-        python_generator = """
-                            Blockly.Python['time_wait_for_completion'] = function(block) {
-                            var text_device_name = block.getFieldValue('DEVICE_NAME');
-                            var number_timeout = block.getFieldValue('TIMEOUT');
-                            // TODO: Assemble Python into code variable.
-                            var code = 'time_wait_for_completion(\"' + text_device_name + '\",' + number_timeout + ')\\n';
-                            return code;
-                            };
-                            """
+                },
+        sandbox_function = (sandbox_functions.time_wait_for_completion, "DEVICE_NAME", "TIMEOUT")
     )
 
-    blocks["time_wait_for_completion_all"] = PyriBlocklyBlock(
-        name = "time_wait_for_completion_all",
+    add_blockly_block(blocks,
         category = "Time",
-        doc = "Wait for all device actions to complete with timeout specified in seconds",
-        json = """
-                {
+        blockly_json = {
                 "type": "time_wait_for_completion_all",
                 "message0": "wait for device actions to complete with %1 second timeout",
                 "args0": [
@@ -92,28 +73,18 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                     "max": 3600
                     }
                 ],
-                "previousStatement": null,
-                "nextStatement": null,
+                "previousStatement": None,
+                "nextStatement": None,
                 "colour": 65,
-                "tooltip": "Wait for device action to complete",
+                "tooltip": "Wait for all device actions to complete with timeout specified in seconds",
                 "helpUrl": ""
-                }
-                """,
-        python_generator = """
-                            Blockly.Python['time_wait_for_completion_all'] = function(block) {
-                            var number_timeout = block.getFieldValue('TIMEOUT');
-                            // TODO: Assemble Python into code variable.
-                            var code = 'time_wait_for_completion_all(' + number_timeout + ')\\n';
-                            return code;
-                            };
-                            """
+                },
+        sandbox_function = (sandbox_functions.time_wait_for_completion_all, "TIMEOUT")
     )
 
-    blocks["linalg_vector"] = PyriBlocklyBlock(
-        name = "linalg_vector",
+    add_blockly_block(blocks,
         category = "Linalg",
-        doc = "Create a new vector",
-        json = """{
+        blockly_json = {
                 "type": "linalg_vector",
                 "message0": "new vector [ %1 ]",
                 "args0": [
@@ -123,24 +94,24 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                     "text": ""
                     }
                 ],
-                "output": null,
+                "output": None,
                 "colour": 230,
                 "tooltip": "Create a new vector",
                 "helpUrl": ""
-                }""",
-        python_generator = """Blockly.Python['linalg_vector'] = function(block) {
-                            var text_vector = block.getFieldValue('VECTOR');                            
-                            var code = 'linalg_vector(\\\"' + text_vector + '\\\")';                          
-                            return [code, Blockly.Python.ORDER_NONE];
-                            };
-                            """
+                },
+        sandbox_function = (sandbox_functions.linalg_vector, "VECTOR"),
+        sandbox_function_arguments = [
+            PyriBlocklyBlockArgument(
+                blockly_arg_name="VECTOR",
+                sandbox_function_arg_name= "vector",
+                arg_interpretation=argtype.QUOTE
+            )
+        ]
         
     )
-    blocks["linalg_matrix"] = PyriBlocklyBlock(
-        name = "linalg_matrix",
+    add_blockly_block(blocks,
         category = "Linalg",
-        doc = "Create a new matrix",
-        json = """{
+        blockly_json = {
                 "type": "linalg_matrix",
                 "message0": "new matrix %1 ",
                 "args0": [
@@ -150,24 +121,24 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                     "text": ""
                     }
                 ],
-                "output": null,
+                "output": None,
                 "colour": 230,
                 "tooltip": "Create a new matrix",
                 "helpUrl": ""
-                }""",
-        python_generator = """Blockly.Python['linalg_matrix'] = function(block) {
-                            var text_matrix = block.getFieldValue('MATRIX');                            
-                            var code = 'linalg_matrix(\\\"' + text_matrix + '\\\")';                          
-                            return [code, Blockly.Python.ORDER_NONE];
-                            };
-                            """
+                },
+        sandbox_function = (sandbox_functions.linalg_matrix, "MATRIX"),
+        sandbox_function_arguments = [
+            PyriBlocklyBlockArgument(
+                blockly_arg_name="MATRIX",
+                sandbox_function_arg_name= "string_matrix",
+                arg_interpretation=argtype.QUOTE
+            )
+        ]
         
     )
-    blocks["linalg_fill_vector"] = PyriBlocklyBlock(
-        name = "linalg_fill_vector",
+    add_blockly_block(blocks,
         category = "Linalg",
-        doc = "Create a new zero vector with m elements filled with value",
-        json = """{
+        blockly_json = {
                 "type": "linalg_fill_vector",
                 "message0": "fill vector length %1 with value %2 %3",
                 "args0": [
@@ -186,27 +157,17 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                     "align": "CENTRE"
                     }
                 ],
-                "output": null,
+                "output": None,
                 "colour": 230,
                 "tooltip": "Create vector with length m and fill with value",
                 "helpUrl": ""
-                }""",
-        python_generator = """Blockly.Python['linalg_fill_vector'] = function(block) {
-                            var number_m = Blockly.Python.valueToCode(block, 'M', Blockly.Python.ORDER_ATOMIC);
-                            var value_value = Blockly.Python.valueToCode(block, 'VALUE', Blockly.Python.ORDER_ATOMIC);
-                            // TODO: Assemble Python into code variable.
-                            var code = 'linalg_fill_vector(' + number_m + ',' + value_value + ')';
-                            // TODO: Change ORDER_NONE to the correct strength.
-                            return [code, Blockly.Python.ORDER_NONE];
-                            };
-                            """
+                },
+        sandbox_function=(sandbox_functions.linalg_fill_vector,"M","VALUE")
         
     )
-    blocks["linalg_fill_matrix"] = PyriBlocklyBlock(
-        name = "linalg_fill_matrix",
+    add_blockly_block(blocks,
         category = "Linalg",
-        doc = "Create a new matrix with m x n elements and fill with value",
-        json = """{
+        blockly_json = {
                 "type": "linalg_fill_matrix",
                 "message0": "fill matrix size %1 , %2 with value %3 %4",
                 "args0": [
@@ -230,27 +191,16 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                     "align": "CENTRE"
                     }
                 ],
-                "output": null,
+                "output": None,
                 "colour": 230,
                 "tooltip": "Create matrix with size m,n and fill with value",
                 "helpUrl": ""
-                }""",
-        python_generator = """Blockly.Python['linalg_fill_matrix'] = function(block) {
-                        var value_m = Blockly.Python.valueToCode(block, 'M', Blockly.Python.ORDER_ATOMIC);
-                        var value_n = Blockly.Python.valueToCode(block, 'N', Blockly.Python.ORDER_ATOMIC);
-                        var value_value = Blockly.Python.valueToCode(block, 'VALUE', Blockly.Python.ORDER_ATOMIC);
-                        // TODO: Assemble Python into code variable.
-                        var code = 'linalg_fill_matrix(' + value_m + ',' + value_n + ',' + value_value + ')';
-                        // TODO: Change ORDER_NONE to the correct strength.
-                        return [code, Blockly.Python.ORDER_NONE];
-                        };
-                            """
+                },
+        sandbox_function=(sandbox_functions.linalg_fill_matrix,"M","N","VALUE")
     )
-    blocks["linalg_unary_op"] = PyriBlocklyBlock(
-        name = "linalg_unary_op",
+    add_blockly_block(blocks,
         category = "Linalg",
-        doc = "Linear algebra unary op",
-        json = """{
+        blockly_json = {
                 "type": "linalg_unary_op",
                 "message0": "%1 %2",
                 "args0": [
@@ -333,82 +283,43 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                     "name": "INPUT"
                     }
                 ],
-                "output": null,
+                "output": None,
                 "colour": 230,
-                "tooltip": "",
+                "tooltip": "Linear algebra unary op",
                 "helpUrl": ""
-                }""",
-        python_generator = """Blockly.Python['linalg_unary_op'] = function(block) {
-                            var op = block.getFieldValue('OP');
-                            var value_input = Blockly.Python.valueToCode(block, 'INPUT', Blockly.Python.ORDER_ATOMIC);
-                            // TODO: Assemble Python into code variable.
-                            switch (op) {
-                                case 'TRANSPOSE':
-                                    op_func = 'linalg_mat_transpose';
-                                    break;
-                                case 'INVERSE':
-                                    op_func = 'linalg_mat_inv';
-                                    break;
-                                case 'NEGATIVE':
-                                    op_func = 'linalg_negative';
-                                    break;
-                                case 'DETERMINANT':
-                                    op_func = 'linalg_mat_det';
-                                    break;
-                                case 'CONJUGATE':
-                                    op_func = 'linalg_mat_conj';
-                                    break;
-                                case 'EIGENVALUES':
-                                    op_func = 'linalg_mat_eigenvalues';
-                                    break;
-                                case 'EIGENVECTORS':
-                                    op_func = 'linalg_mat_eigenvectors';
-                                    break;
-                                case 'MIN':
-                                    op_func = 'linalg_min';
-                                    break;
-                                case 'MAX':
-                                    op_func = 'linalg_max';
-                                    break;
-                                case 'ARGMIN':
-                                    op_func = 'linalg_argmin';
-                                    break;
-                                case 'ARGMAX':
-                                    op_func = 'linalg_argmax';
-                                    break;
-                                case 'PINV':
-                                    op_func = 'linalg_mat_pinv';
-                                    break;
-                                case 'TRACE':
-                                    op_func = 'linalg_mat_trace';
-                                    break;
-                                case 'DIAG':
-                                    op_func = 'linalg_mat_diag';
-                                    break;
-                                case 'HAT':
-                                    op_func = 'linalg_hat';
-                                    break;
-                                case 'SUM':
-                                    op_func = 'linalg_sum';
-                                    break;
-                                case 'MULTIPLY':
-                                    op_func = 'linalg_multiply';
-                                    break;
-                                default:
-                                    throw Error('Unknown linalg operator: ' + op);                                
-                            }
-                            var code = op_func + '(' + value_input + ')';
-                            // TODO: Change ORDER_NONE to the correct strength.
-                            return [code, Blockly.Python.ORDER_NONE];
-                            };
-                            """
+                },
+        sandbox_function_name_selector = PyriBlocklyBlockFunctionSelector(
+            selector_field = "OP",
+            sandbox_function_names = {
+                "TRANSPOSE": "linalg_mat_transpose",
+                "INVERSE": "linalg_mat_inv",
+                "NEGATIVE": "linalg_negative",
+                "DETERMINANT": "linalg_mat_det",
+                "CONJUGATE": "linalg_mat_conj",
+                "EIGENVALUES": "linalg_mat_eigenvalues",
+                "EIGENVECTORS": "linalg_mat_eigenvectors",
+                "MIN": "linalg_min",
+                "MAX": "linalg_man",
+                "ARGMIN": "linalg_argmin",
+                "ARGMAX": "linalg_argmax",
+                "PINV": "linalg_mat_pinv",
+                "TRACE": "linalg_mat_trace",
+                "DIAG": "linalg_mat_diag",
+                "HAT": "linalg_hat",
+                "SUM": "linalg_sum",
+                "MULTIPLY": "linalg_multiply",
+
+            }
+        ),
+        sandbox_function_arguments=[
+            PyriBlocklyBlockArgument(blockly_arg_name="INPUT", sandbox_function_arg_name="input", 
+                arg_interpretation=argtype.CODE)
+        ]
     )
 
-    blocks["linalg_binary_op"] = PyriBlocklyBlock(
-        name = "linalg_binary_op",
+    add_blockly_block(blocks,
         category = "Linalg",
-        doc = "Linear algebra binary op",
-        json = """{
+        blockly_json = {
                 "type": "linalg_binary_op",
                 "message0": "%1 %2 %3 %4",
                 "args0": [
@@ -470,62 +381,37 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                     "type": "input_dummy"
                     }
                 ],
-                "output": null,
+                "output": None,
                 "colour": 230,
-                "tooltip": "",
+                "tooltip": "Linear algebra binary op",
                 "helpUrl": ""
-                }""",
-        python_generator = """Blockly.Python['linalg_binary_op'] = function(block) {
-                            var value_a = Blockly.Python.valueToCode(block, 'A', Blockly.Python.ORDER_ATOMIC);
-                            var op = block.getFieldValue('OP');
-                            var value_b = Blockly.Python.valueToCode(block, 'B', Blockly.Python.ORDER_ATOMIC);
-                            // TODO: Assemble Python into code variable.
-                            switch (op) {
-                                case 'MATRIXADD':
-                                    op_func='linalg_mat_add';
-                                    break;
-                                case 'MATRIXSUB':
-                                    op_func='linalg_mat_subtract';
-                                    break;
-                                case 'MATRIXMULT':
-                                    op_func='linalg_mat_multiply';
-                                    break;
-                                case 'ELEMENTADD':
-                                    op_func='linalg_elem_add';
-                                    break;
-                                case 'ELEMENTSUB':
-                                    op_func='linalg_elem_subtract';
-                                    break;
-                                case 'ELEMENTMULT':
-                                    op_func='linalg_elem_multiply';
-                                    break;
-                                case 'ELEMENTDIV':
-                                    op_func='linalg_elem_divide';
-                                    break;
-                                case 'DOT':
-                                    op_func='linalg_dot';
-                                    break;
-                                case 'CROSS':
-                                    op_func='linalg_cross';
-                                    break;
-                                case 'MATRIXSOLVE':
-                                    op_func='linalg_mat_solve';
-                                    break;
-                                default:
-                                    throw Error('Unknown linalg operator: ' + op);
-                            }
-                            var code = op_func + '(' + value_a + ',' + value_b + ')';
-                            // TODO: Change ORDER_NONE to the correct strength.
-                            return [code, Blockly.Python.ORDER_NONE];
-                            };
-                            """
+                },
+        sandbox_function_name_selector = PyriBlocklyBlockFunctionSelector(
+            selector_field = "OP",
+            sandbox_function_names = {
+                "MATRIXADD": "linalg_mat_add",
+                "MATRIXSUB": "linalg_mat_subtract",
+                "MATRIXMULT": "linalg_mat_multiply",
+                "ELEMENTADD": "linalg_elem_add",
+                "ELEMENTSUB": "linalg_elem_subtract",
+                "ELEMENTMULT": "linalg_elem_multiply",
+                "ELEMENTDIV": "linalg_elem_divide",
+                "DOT": "linalg_dot",
+                "CROSS": "linalg_cross",
+                "MATRIXSOLVE": "linalg_mat_solve"
+            }
+        ),
+        sandbox_function_arguments=[
+            PyriBlocklyBlockArgument(blockly_arg_name="A", sandbox_function_arg_name="a", 
+                arg_interpretation=argtype.CODE),
+            PyriBlocklyBlockArgument(blockly_arg_name="B", sandbox_function_arg_name="b", 
+                arg_interpretation=argtype.CODE)
+        ]
     )
 
-    blocks["linalg_vector_get"] = PyriBlocklyBlock(
-        name = "linalg_vector_get",
+    add_blockly_block(blocks,
         category = "Linalg",
-        doc = "Get vector element m",
-        json = """{
+        blockly_json = {
                 "type": "linalg_vector_get",
                 "message0": "in vector %1 get element %2 %3",
                 "args0": [
@@ -542,28 +428,17 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                     "type": "input_dummy"
                     }
                 ],
-                "output": null,
+                "output": None,
                 "colour": 230,
                 "tooltip": "Get vector element m",
                 "helpUrl": ""
-                }""",
-        python_generator = """Blockly.Python['linalg_vector_get'] = function(block) {
-                            var value_vector = Blockly.Python.valueToCode(block, 'VECTOR', Blockly.Python.ORDER_ATOMIC);
-                            var value_m = Blockly.Python.valueToCode(block, 'M', Blockly.Python.ORDER_ATOMIC);
-                            // TODO: Assemble Python into code variable.
-                            var code = 'linalg_vector_get_elem(' + value_vector + ',' + value_m + ')';
-                            // TODO: Change ORDER_NONE to the correct strength.
-                            return [code, Blockly.Python.ORDER_NONE];
-                            };
-                            """
-        
+                },
+        sandbox_function = (sandbox_functions.linalg_vector_get_elem,"VECTOR","M")
     )
 
-    blocks["linalg_vector_set"] = PyriBlocklyBlock(
-        name = "linalg_vector_set",
+    add_blockly_block(blocks,
         category = "Linalg",
-        doc = "Set vector element m",
-        json = """{
+        blockly_json = {
                 "type": "linalg_vector_set",
                 "message0": "in vector %1 set element %2 as %3 %4",
                 "args0": [
@@ -585,29 +460,17 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                     "type": "input_dummy"
                     }
                 ],
-                "output": null,
+                "output": None,
                 "colour": 230,
                 "tooltip": "Set vector element m",
                 "helpUrl": ""
-                }""",
-        python_generator = """Blockly.Python['linalg_vector_set'] = function(block) {
-                            var value_vector = Blockly.Python.valueToCode(block, 'VECTOR', Blockly.Python.ORDER_ATOMIC);
-                            var value_m = Blockly.Python.valueToCode(block, 'M', Blockly.Python.ORDER_ATOMIC);
-                            var value_value = Blockly.Python.valueToCode(block, 'VALUE', Blockly.Python.ORDER_ATOMIC);
-                            // TODO: Assemble Python into code variable.
-                            var code = 'linalg_vector_set_elem(' + value_vector + ',' + value_m + ',' + value_value + ')';
-                            // TODO: Change ORDER_NONE to the correct strength.
-                            return [code, Blockly.Python.ORDER_NONE];
-                            }
-                            """
-        
+                },
+        sandbox_function = (sandbox_functions.linalg_vector_set_elem,"VECTOR","M","VALUE")        
     )
 
-    blocks["linalg_vector_length"] = PyriBlocklyBlock(
-        name = "linalg_vector_length",
+    add_blockly_block(blocks,
         category = "Linalg",
-        doc = "Get vector length",
-        json = """{
+        blockly_json = {
                 "type": "linalg_vector_length",
                 "message0": "length of vector %1",
                 "args0": [
@@ -616,27 +479,17 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                     "name": "VECTOR"
                     }
                 ],
-                "output": null,
+                "output": None,
                 "colour": 230,
-                "tooltip": "Length of vector",
+                "tooltip": "Get length of vector",
                 "helpUrl": ""
-                }""",
-        python_generator = """Blockly.Python['linalg_vector_length'] = function(block) {
-                            var value_vector = Blockly.Python.valueToCode(block, 'VECTOR', Blockly.Python.ORDER_ATOMIC);
-                            // TODO: Assemble Python into code variable.
-                            var code = 'linalg_vector_len(' + value_vector + ')';
-                            // TODO: Change ORDER_NONE to the correct strength.
-                            return [code, Blockly.Python.ORDER_NONE];
-                            };
-                            """
-        
+                },
+        sandbox_function = (sandbox_functions.linalg_vector_len,"VECTOR")
     )
 
-    blocks["linalg_matrix_get"] = PyriBlocklyBlock(
-        name = "linalg_matrix_get",
+    add_blockly_block(blocks,
         category = "Linalg",
-        doc = "Get matrix element m x n",
-        json = """{
+        blockly_json = {
                 "type": "linalg_matrix_get",
                 "message0": "in matrix %1 get element %2 , %3 %4",
                 "args0": [
@@ -658,29 +511,17 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                     "type": "input_dummy"
                     }
                 ],
-                "output": null,
+                "output": None,
                 "colour": 230,
                 "tooltip": "Get matrix element m x n",
                 "helpUrl": ""
-                }""",
-        python_generator = """Blockly.Python['linalg_matrix_get'] = function(block) {
-                            var value_matrix = Blockly.Python.valueToCode(block, 'MATRIX', Blockly.Python.ORDER_ATOMIC);
-                            var value_m = Blockly.Python.valueToCode(block, 'M', Blockly.Python.ORDER_ATOMIC);
-                            var value_n = Blockly.Python.valueToCode(block, 'N', Blockly.Python.ORDER_ATOMIC);
-                            // TODO: Assemble Python into code variable.
-                            var code = 'linalg_matrix_get_elem(' + value_matrix + ',' + value_m + ',' + value_n + ')';
-                            // TODO: Change ORDER_NONE to the correct strength.
-                            return [code, Blockly.Python.ORDER_NONE];
-                            };
-                            """
-        
+                },
+        sandbox_function = (sandbox_functions.linalg_matrix_get_elem,"MATRIX","M","N")
     )
 
-    blocks["linalg_matrix_set"] = PyriBlocklyBlock(
-        name = "linalg_matrix_set",
+    add_blockly_block(blocks,
         category = "Linalg",
-        doc = "Set matrix element m x n",
-        json = """{
+        blockly_json = {
             "type": "linalg_matrix_set",
             "message0": "in matrix %1 set element %2 , %3 as %4 %5",
             "args0": [
@@ -707,30 +548,17 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                 "type": "input_dummy"
                 }
             ],
-            "output": null,
+            "output": None,
             "colour": 230,
             "tooltip": "Set matrix element m x n",
             "helpUrl": ""
-            }""",
-        python_generator = """Blockly.Python['linalg_matrix_set'] = function(block) {
-            var value_matrix = Blockly.Python.valueToCode(block, 'MATRIX', Blockly.Python.ORDER_ATOMIC);
-            var value_m = Blockly.Python.valueToCode(block, 'M', Blockly.Python.ORDER_ATOMIC);
-            var value_n = Blockly.Python.valueToCode(block, 'N', Blockly.Python.ORDER_ATOMIC);
-            var value_value = Blockly.Python.valueToCode(block, 'VALUE', Blockly.Python.ORDER_ATOMIC);
-            // TODO: Assemble Python into code variable.
-            var code = 'linalg_matrix_set_elem(' + value_matrix + ',' + value_m + ',' + value_n + ',' + value_value + ')';
-            // TODO: Change ORDER_NONE to the correct strength.
-            return [code, Blockly.Python.ORDER_NONE];
-            };
-            """
-        
+            },
+        sandbox_function = (sandbox_functions.linalg_matrix_set_elem,"MATRIX","M","N","VALUE")
     )    
     
-    blocks["linalg_matrix_size"] = PyriBlocklyBlock(
-        name = "linalg_matrix_size",
+    add_blockly_block(blocks,
         category = "Linalg",
-        doc = "Get matrix_size",
-        json = """{
+        blockly_json = {
                 "type": "linalg_matrix_size",
                 "message0": "size of matrix %1",
                 "args0": [
@@ -739,27 +567,17 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                     "name": "MATRIX"
                     }
                 ],
-                "output": null,
+                "output": None,
                 "colour": 230,
                 "tooltip": "Size of matrix",
                 "helpUrl": ""
-                }""",
-        python_generator = """Blockly.Python['linalg_matrix_size'] = function(block) {
-                            var value_matrix = Blockly.Python.valueToCode(block, 'MATRIX', Blockly.Python.ORDER_ATOMIC);
-                            // TODO: Assemble Python into code variable.
-                            var code = 'linalg_matrix_size(' + value_matrix + ')';
-                            // TODO: Change ORDER_NONE to the correct strength.
-                            return [code, Blockly.Python.ORDER_NONE];
-                            };
-                            """
-        
+                },
+        sandbox_function = (sandbox_functions.linalg_matrix_size,"MATRIX")
     )
 
-    blocks["global_variable_get"] = PyriBlocklyBlock(
-        name = "global_variable_get",
+    add_blockly_block(blocks,
         category = "Globals",
-        doc = "Get a global variable value",
-        json = """{
+        blockly_json = {
                 "type": "global_variable_get",
                 "message0": "global %1",
                 "args0": [
@@ -769,26 +587,17 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                     "text": "global_name"
                     }
                 ],
-                "output": null,
+                "output": None,
                 "colour": 330,
                 "tooltip": "Get a global variable",
                 "helpUrl": ""
-                }""",
-        python_generator = """Blockly.Python['global_variable_get'] = function(block) {
-                            var text_name = block.getFieldValue('NAME');
-                            // TODO: Assemble Python into code variable.
-                            var code = 'global_variable_get(\\\"' + text_name + '\\\")';
-                            // TODO: Change ORDER_NONE to the correct strength.
-                            return [code, Blockly.Python.ORDER_NONE];
-                            };
-                            """        
+                },
+        sandbox_function = (sandbox_functions.global_variable_get, "NAME")  
     )
 
-    blocks["global_variable_set"] = PyriBlocklyBlock(
-        name = "global_variable_set",
+    add_blockly_block(blocks,
         category = "Globals",
-        doc = "Set a global variable value",
-        json = """{
+        blockly_json = {
                 "type": "global_variable_set",
                 "message0": "global %1 %2",
                 "args0": [
@@ -802,27 +611,18 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                     "name": "VALUE"
                     }
                 ],
-                "previousStatement": null,
-                "nextStatement": null,
+                "previousStatement": None,
+                "nextStatement": None,
                 "colour": 330,
                 "tooltip": "Set a global variable value",
                 "helpUrl": ""
-                }""",
-        python_generator = """Blockly.Python['global_variable_set'] = function(block) {
-                            var text_name = block.getFieldValue('NAME');
-                            var value_value = Blockly.Python.valueToCode(block, 'VALUE', Blockly.Python.ORDER_ATOMIC);
-                            // TODO: Assemble Python into code variable.
-                            var code = 'global_variable_set(\\\"' + text_name + '\\\",' + value_value + ')\\n';
-                            return code;
-                            };
-                            """        
+                },
+        sandbox_function = (sandbox_functions.global_variable_set,"NAME","VALUE")
     )
 
-    blocks["global_variable_add"] = PyriBlocklyBlock(
-        name = "global_variable_add",
+    add_blockly_block(blocks,
         category = "Globals",
-        doc = "Add a global variable",
-        json = """{
+        blockly_json = {
                 "type": "global_variable_add",
                 "message0": "add global named %1 with type %2 with value %3 with persistence %4 with reset value %5",
                 "args0": [
@@ -884,30 +684,18 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                     "name": "RESET_VALUE"
                     }
                 ],
-                "previousStatement": null,
-                "nextStatement": null,
+                "previousStatement": None,
+                "nextStatement": None,
                 "colour": 330,
-                "tooltip": "",
+                "tooltip": "Add a global variable",
                 "helpUrl": ""
-                }""",
-        python_generator = """Blockly.Python['global_variable_add'] = function(block) {
-                            var value_name = Blockly.Python.valueToCode(block, 'NAME', Blockly.Python.ORDER_ATOMIC);
-                            var dropdown_type = block.getFieldValue('TYPE');
-                            var value_value = Blockly.Python.valueToCode(block, 'VALUE', Blockly.Python.ORDER_ATOMIC);
-                            var dropdown_pers = block.getFieldValue('PERS');
-                            var value_reset_value = Blockly.Python.valueToCode(block, 'RESET_VALUE', Blockly.Python.ORDER_ATOMIC);
-                            // TODO: Assemble Python into code variable.
-                            var code = 'global_variable_add(' + value_name + ',\"' + dropdown_type + '\",' + value_value + ',\"' + dropdown_pers + '\",' + value_reset_value +  ')\\n';
-                            return code;
-                            };
-                            """        
+                },
+        sandbox_function = (sandbox_functions.global_variable_add,"NAME","TYPE","VALUE","PERS","RESET_VALUE")      
     )
 
-    blocks["global_variable_delete"] = PyriBlocklyBlock(
-        name = "global_variable_delete",
+    add_blockly_block(blocks,
         category = "Globals",
-        doc = "Delete a global variable",
-        json = """{
+        blockly_json = {
                 "type": "global_variable_delete",
                 "message0": "delete global %1",
                 "args0": [
@@ -917,26 +705,18 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                     "text": "global_name"
                     }
                 ],
-                "previousStatement": null,
-                "nextStatement": null,
+                "previousStatement": None,
+                "nextStatement": None,
                 "colour": 330,
-                "tooltip": "",
+                "tooltip": "Delete a global variable",
                 "helpUrl": ""
-                }""",
-        python_generator = """Blockly.Python['global_variable_delete'] = function(block) {
-                            var text_name = block.getFieldValue('NAME');
-                            // TODO: Assemble Python into code variable.
-                            var code = 'global_variable_delete(\\\"' + text_name + '\\\")\\n';
-                            return code;
-                            };
-                            """        
+                },
+        sandbox_function = (sandbox_functions.global_variable_delete,"NAME")       
     )
 
-    blocks["geometry_pose_new"] = PyriBlocklyBlock(
-        name = "geometry_pose_new",
+    add_blockly_block(blocks,
         category = "Geometry",
-        doc = "Create a new pose",
-        json = """{
+        blockly_json = {
                 "type": "geometry_pose_new",
                 "message0": "new pose    x %1 y %2 z %3 R %4 P %5 Y %6",
                 "args0": [
@@ -976,35 +756,17 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                     "align": "RIGHT"
                     }
                 ],
-                "output": null,
+                "output": None,
                 "colour": 230,
                 "tooltip": "Create a new pose",
                 "helpUrl": ""
-                }
-
-               """,
-        python_generator = """
-                            Blockly.Python['geometry_pose_new'] = function(block) {
-                                var value_x = Blockly.Python.valueToCode(block, 'X', Blockly.Python.ORDER_ATOMIC);
-                                var value_y = Blockly.Python.valueToCode(block, 'Y', Blockly.Python.ORDER_ATOMIC);
-                                var value_z = Blockly.Python.valueToCode(block, 'Z', Blockly.Python.ORDER_ATOMIC);
-                                var value_r_x = Blockly.Python.valueToCode(block, 'R_X', Blockly.Python.ORDER_ATOMIC);
-                                var value_r_p = Blockly.Python.valueToCode(block, 'R_P', Blockly.Python.ORDER_ATOMIC);
-                                var value_r_y = Blockly.Python.valueToCode(block, 'R_Y', Blockly.Python.ORDER_ATOMIC);
-                                // TODO: Assemble JavaScript into code variable.
-                                var code = 'geometry_pose_new(' + value_x + ',' + value_y + ',' + value_z + ',' + value_r_x + ',' + value_r_p + ',' + value_r_y + ')';
-                                // TODO: Change ORDER_NONE to the correct strength.
-                                return [code, Blockly.Python.ORDER_NONE];
-                            };
-                           """
+                },
+        sandbox_function = (sandbox_functions.geometry_pose_new,"X","Y","Z","R_X","R_P","R_Y")
     )
 
-    blocks["geometry_pose_component_get"] = PyriBlocklyBlock(
-        name = "geometry_pose_component_get",
+    add_blockly_block(blocks,
         category = "Geometry",
-        doc = "Get component of a pose",
-        json = """
-               {
+        blockly_json = {
                 "type": "geometry_pose_component_get",
                 "message0": "get pose component %1 %2",
                 "args0": [
@@ -1043,30 +805,17 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                     "name": "POSE"
                     }
                 ],
-                "output": null,
+                "output": None,
                 "colour": 230,
                 "tooltip": "Get component of a pose",
                 "helpUrl": ""
-                }
-               """,
-        python_generator = """
-                            Blockly.Python['geometry_pose_component_get'] = function(block) {
-                            var dropdown_component = block.getFieldValue('COMPONENT');
-                            var value_pose = Blockly.Python.valueToCode(block, 'POSE', Blockly.Python.ORDER_ATOMIC);
-                            // TODO: Assemble JavaScript into code variable.
-                            var code = 'geometry_pose_component_get(' + value_pose + ',\"' + dropdown_component + '\")';
-                            // TODO: Change ORDER_NONE to the correct strength.
-                            return [code, Blockly.Python.ORDER_NONE];
-                            };
-                           """
+                },
+        sandbox_function = (sandbox_functions.geometry_pose_component_get,"POSE","COMPONENT")
     )
 
-    blocks["geometry_pose_component_set"] = PyriBlocklyBlock(
-        name = "geometry_pose_component_set",
+    add_blockly_block(blocks,
         category = "Geometry",
-        doc = "Set component of a pose",
-        json = """
-              {
+        blockly_json = {
             "type": "geometry_pose_component_set",
             "message0": "set pose %1 component %2 %3",
             "args0": [
@@ -1109,31 +858,17 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                 "name": "VALUE"
                 }
             ],
-            "output": null,
+            "output": None,
             "colour": 230,
             "tooltip": "Set component of a pose",
             "helpUrl": ""
-            }
-               """,
-        python_generator = """
-                            Blockly.Python['geometry_pose_component_set'] = function(block) {
-                            var dropdown_component = block.getFieldValue('COMPONENT');
-                            var value_pose = Blockly.Python.valueToCode(block, 'POSE', Blockly.Python.ORDER_ATOMIC);
-                            var value_value = Blockly.Python.valueToCode(block, 'VALUE', Blockly.Python.ORDER_ATOMIC);
-                            // TODO: Assemble JavaScript into code variable.
-                            var code = 'geometry_pose_component_set(' + value_pose + ',\"' + dropdown_component + '\",' + value_value + ')';
-                            // TODO: Change ORDER_NONE to the correct strength.
-                            return [code, Blockly.Python.ORDER_NONE];
-                            };
-                           """
+            },
+        sandbox_function = (sandbox_functions.geometry_pose_component_set,"POSE","COMPONENT","VALUE")
     )
 
-    blocks["geometry_pose_multiply"] = PyriBlocklyBlock(
-        name = "geometry_pose_multiply",
+    add_blockly_block(blocks,
         category = "Geometry",
-        doc = "Multiply two poses",
-        json = """
-               {
+        blockly_json = {
                 "type": "geometry_pose_multiply",
                 "message0": "pose multiply %1 times %2 %3",
                 "args0": [
@@ -1149,30 +884,17 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                     "type": "input_dummy"
                     }
                 ],
-                "output": null,
+                "output": None,
                 "colour": 230,
                 "tooltip": "Set component of a pose",
                 "helpUrl": ""
-                }
-               """,
-        python_generator = """
-                            Blockly.Python['geometry_pose_multiply'] = function(block) {
-                            var value_a = Blockly.Python.valueToCode(block, 'A', Blockly.Python.ORDER_ATOMIC);
-                            var value_b = Blockly.Python.valueToCode(block, 'B', Blockly.Python.ORDER_ATOMIC);
-                            // TODO: Assemble JavaScript into code variable.
-                            var code = 'geometry_pose_multiply(' + value_a + ',' + value_b + ')';
-                            // TODO: Change ORDER_NONE to the correct strength.
-                            return [code, Blockly.Python.ORDER_NONE];
-                            };
-                           """
+                },
+        sandbox_function = (sandbox_functions.geometry_pose_multiply,"A","B")
         )
 
-    blocks["geometry_pose_inv"] = PyriBlocklyBlock(
-        name = "geometry_pose_inv",
+    add_blockly_block(blocks,
         category = "Geometry",
-        doc = "Get inverse of pose",
-        json = """
-               {
+        blockly_json = {
                 "type": "geometry_pose_inv",
                 "message0": "pose inv %1",
                 "args0": [
@@ -1181,29 +903,17 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                     "name": "A"
                     }
                 ],
-                "output": null,
+                "output": None,
                 "colour": 230,
                 "tooltip": "Get inverse of pose",
                 "helpUrl": ""
-                }
-               """,
-        python_generator = """
-                            Blockly.Python['geometry_pose_inv'] = function(block) {
-                            var value_a = Blockly.Python.valueToCode(block, 'A', Blockly.Python.ORDER_ATOMIC);
-                            // TODO: Assemble JavaScript into code variable.
-                            var code = 'geometry_pose_inv(' + value_a + ')';
-                            // TODO: Change ORDER_NONE to the correct strength.
-                            return [code, Blockly.Python.ORDER_NONE];
-                            };
-                           """
+                },
+        sandbox_function = (sandbox_functions.geometry_pose_inv,"A")
         )
 
-    blocks["util_copy"] = PyriBlocklyBlock(
-            name = "util_copy",
+    add_blockly_block(blocks,
             category = "Util",
-            doc = "Get inverse of pose",
-            json = """
-                    {
+            blockly_json = {
                     "type": "util_copy",
                     "message0": "copy value %1",
                     "args0": [
@@ -1212,49 +922,30 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                         "name": "VALUE"
                         }
                     ],
-                    "output": null,
+                    "output": None,
                     "colour": 330,
                     "tooltip": "Copy a value",
                     "helpUrl": ""
-                    }
-                    """,
-            python_generator = """
-                                Blockly.Python['util_copy'] = function(block) {
-                                var value_value = Blockly.Python.valueToCode(block, 'VALUE', Blockly.Python.ORDER_ATOMIC);
-                                // TODO: Assemble Python into code variable.
-                                var code = 'util_copy(' + value_value + ')';
-                                // TODO: Change ORDER_NONE to the correct strength.
-                                return [code, Blockly.Python.ORDER_NONE];
-                                };
-                            """
+                    },
+            sandbox_function = (sandbox_functions.util_copy,"VALUE")
         )
 
-    blocks["proc_result_get"] = PyriBlocklyBlock(
-        name = "proc_result_get",
+    add_blockly_block(blocks,
         category = "Util",
-        doc = "Get the current procedure result",
-        json = """{
+        blockly_json = {
                 "type": "proc_result_get",
                 "message0": "procedure result",
-                "output": null,
+                "output": None,
                 "colour": 330,
                 "tooltip": "Get the current procedure result",
                 "helpUrl": ""
-                }""",
-        python_generator = """Blockly.Python['proc_result_get'] = function(block) {                            
-                            // TODO: Assemble Python into code variable.
-                            var code = 'proc_result_get()';
-                            // TODO: Change ORDER_NONE to the correct strength.
-                            return [code, Blockly.Python.ORDER_NONE];
-                            };
-                            """        
+                },
+        sandbox_function = (sandbox_functions.proc_result_get,)     
     )
 
-    blocks["proc_result_set"] = PyriBlocklyBlock(
-        name = "proc_result_set",
+    add_blockly_block(blocks,
         category = "Util",
-        doc = "Set the procedure result",
-        json = """{
+        blockly_json = {
                 "type": "proc_result_set",
                 "message0": "procedure result %1",
                 "args0": [
@@ -1263,49 +954,25 @@ def _get_blocks() -> Dict[str,PyriBlocklyBlock]:
                     "name": "VALUE"
                     }
                 ],
-                "previousStatement": null,
-                "nextStatement": null,
+                "previousStatement": None,
+                "nextStatement": None,
                 "colour": 330,
                 "tooltip": "Set a global variable value",
                 "helpUrl": ""
-                }""",
-        python_generator = """Blockly.Python['proc_result_set'] = function(block) {
-                            var value_value = Blockly.Python.valueToCode(block, 'VALUE', Blockly.Python.ORDER_ATOMIC);
-                            // TODO: Assemble Python into code variable.
-                            var code = 'proc_result_set(' + value_value + ')';
-                            return code;
-                            };
-                            """        
+                },
+        sandbox_function = (sandbox_functions.proc_result_set,"VALUE")      
     )
-
-        
 
     return blocks
 
 def _get_categories() -> Dict[str,PyriBlocklyCategory]:
     categories = {}
-    categories["Util"] = PyriBlocklyCategory(
-        name = "Util",
-        json = '{"kind": "category", "name": "Util", "colour": 330 }'
-    )
-    categories["Globals"] = PyriBlocklyCategory(
-        name = "Globals",
-        json = '{"kind": "category", "name": "Globals", "colour": 330 }'
-    )
-    categories["Time"] = PyriBlocklyCategory(
-        name = "Time",
-        json = '{"kind": "category", "name": "Time", "colour": 65 }'
-    )
-
-    categories["Linalg"] = PyriBlocklyCategory(
-        name ="Linalg",
-        json = '{"kind": "category", "name": "Linalg", "colour": 230 }'
-    )
-
-    categories["Geometry"] = PyriBlocklyCategory(
-        name = "Geometry",
-        json = '{"kind": "category", "name": "Geometry", "colour": 230}'
-    )
+    
+    add_blockly_category(categories, "Util", 330)
+    add_blockly_category(categories, "Globals", 330)
+    add_blockly_category(categories, "Time", 65)
+    add_blockly_category(categories, "Linalg", 230)
+    add_blockly_category(categories, "Geometry", 230)
 
     return categories
 

@@ -19,6 +19,7 @@ setup(
         'yamale',
         'appdirs',
         'netifaces'
+        'typedload'
     ],
     tests_require=['pytest','pytest-asyncio'],
     extras_require={

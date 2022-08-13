@@ -23,7 +23,7 @@ def util_copy(var):
     # TODO: Restrict which objects can be copied?
     return copy.deepcopy(var)
 
-def time_wait_for_completion(local_device_name, timeout):
+def time_wait_for_completion(local_device_name: str, timeout: float):
     """
     Wait for an asynchronous operation to complete for specified
     device. Raises an error if timeout expires before completion.
@@ -35,7 +35,7 @@ def time_wait_for_completion(local_device_name, timeout):
     """
     PyriSandboxContext.action_runner.wait_for_completion(local_device_name, timeout)
 
-def time_wait_for_completion_all(timeout):
+def time_wait_for_completion_all(timeout: float):
     """
     Wait for all asynchronous operations on all devices to complete.
     Raises an error if timeout expires before completion.
@@ -47,7 +47,7 @@ def time_wait_for_completion_all(timeout):
     """
     PyriSandboxContext.action_runner.wait_for_completion_all(timeout)
 
-def time_wait(seconds):
+def time_wait(seconds: float):
     """
     Wait for a specified time in seconds.
     
@@ -58,7 +58,7 @@ def time_wait(seconds):
     """
     time.sleep(seconds)
 
-def linalg_vector(string_vector):
+def linalg_vector(string_vector: str):
     """
     Create a new vector from a formatted string.
 
@@ -70,7 +70,7 @@ def linalg_vector(string_vector):
     """
     return np.fromstring(string_vector,sep=",").tolist()
 
-def linalg_matrix(string_matrix):
+def linalg_matrix(string_matrix: str):
     """
     Create a new matrix from formatted string
 
