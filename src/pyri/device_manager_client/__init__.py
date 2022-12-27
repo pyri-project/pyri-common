@@ -72,8 +72,9 @@ class DeviceManagerClient:
         self._poller.request_poll()
             
     async def async_refresh_devices(self, timeout = 0):
-        dev_res, dev_client = self._device_manager.TryGetDefaultClient()
-        if not dev_res:
+        try:
+           dev_client = await self._device_manager.AsyncGetDefaultClient(None, timeout)
+        except Exception:
             raise Exception("Could not connect to device manager")
 
         # TODO: Add timeout arg
