@@ -1,0 +1,51 @@
+[project]
+
+name = "pyri-common"
+version = "0.2.0"
+description = "PyRI Teach Pendant Common"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {file = "LICENSE.txt"}
+keywords = ["pyodide", "pyri-project", "pyri-webui", "pyri-webui-browser-package", "pyri-runtime-package", "robotics"]
+authors = [
+    {name = "John Wason", email = "wason@wasontech.com"}
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Topic :: Scientific/Engineering"
+]
+
+dependencies = [
+    'RobotRaconteur',
+    'RobotRaconteurCompanion',
+    'numpy',
+    'PyYAML',
+    'yamale',
+    'appdirs',
+    'netifaces',
+    'typedload'       
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-asyncio"
+]
+
+[project.urls]
+homepage="http://pyri.tech"
+repository="https://github.com/pyri-project/pyri-common"
+
+[project.entry-points."pyri.plugins.sandbox_functions"]
+pyri-common-sandbox-functions = "pyri.sandbox_functions.sandbox_functions:get_sandbox_functions_factory"
+
+[project.entry-points."pyri.plugins.blockly"]
+pyri-common-plugin-blockly="pyri.blockly.blockly:get_blockly_factory"
+
+[build-system]
+build-backend = 'setuptools.build_meta'
+requires = [
+    'setuptools',
+    'toml',
+]
