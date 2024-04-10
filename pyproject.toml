@@ -1,7 +1,7 @@
 [project]
 
 name = "pyri-common"
-version = "0.2.0"
+version = "0.3.0"
 description = "PyRI Teach Pendant Common"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -17,14 +17,15 @@ classifiers = [
 ]
 
 dependencies = [
-    'RobotRaconteur',
-    'RobotRaconteurCompanion',
+    'RobotRaconteur>=1.2.0',
+    'RobotRaconteurCompanion>=0.4.0',
     'numpy',
     'PyYAML',
     'yamale',
     'appdirs',
     'netifaces',
-    'typedload'       
+    'typedload',
+    'importlib-resources==5.13.0', 
 ]
 
 [project.optional-dependencies]
