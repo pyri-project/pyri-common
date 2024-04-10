@@ -1,3 +1,4 @@
+from pathlib import Path
 import RobotRaconteur as RR
 import threading
 import traceback
@@ -12,6 +13,8 @@ try:
 except:
     pass
 
+from RobotRaconteurCompanion.Util.DeviceConnector import DeviceConnector, DeviceConnectorDetails
+
 
 class DeviceManagerClient:
     def __init__(self,device_manager_url: str = None, device_manager_identifier = None, node: RR.RobotRaconteurNode = None, autoconnect = True, tcp_ipv4_only = False):
@@ -24,8 +27,9 @@ class DeviceManagerClient:
         self._connect_request_devices = set()
         self._connect_request_device_types = set()
 
-        self._active_devices=dict()
+        self._active_device_specs = {}
         self._autoconnect = autoconnect
+        self._device_connector = DeviceConnector(node=self._node, autoconnect=autoconnect)
         self._tcp_ipv4_only = tcp_ipv4_only
 
         self._device_added=RR.EventHook()
@@ -36,7 +40,7 @@ class DeviceManagerClient:
         else:
             if device_manager_identifier is None:
                 device_manager_identifier = "pyri_device_manager"
-            filter = _DeviceManagerConnectFilter(device_manager_identifier)
+            filter = _DeviceManagerConnectFilter(self._node, device_manager_identifier)
             self._device_manager = self._node.SubscribeServiceByType("tech.pyri.device_manager.DeviceManager", filter.get_filter())
         
         self._device_manager.ClientConnected += self._device_manager_client_connected
@@ -92,8 +96,8 @@ class DeviceManagerClient:
 
             self._refresh_devices2(active_devices)
         except:
-            pass
-            #traceback.print_exc()
+            
+            traceback.print_exc()
 
     def _filter_urls(self,urls):
         if not self._tcp_ipv4_only:
@@ -129,99 +133,64 @@ class DeviceManagerClient:
 
 
     def _refresh_devices2(self,active_devices):
-        with self._lock:            
+        with self._lock:
+            current_devices = list(self._device_connector.DeviceNicknames)
+            self._active_device_specs = {a.local_device_name: a for a in active_devices}       
             for a in active_devices:
-                if a.local_device_name not in self._active_devices:                   
-                    if self._autoconnect or a.local_device_name in self._connect_request_devices or \
+                if a.local_device_name not in current_devices:                   
+                    enabled =  self._autoconnect or a.local_device_name in self._connect_request_devices or \
                         a.root_object_type in self._connect_request_device_types or \
-                        not self._connect_request_device_types.isdisjoint(a.root_object_implements):
+                        not self._connect_request_device_types.isdisjoint(a.root_object_implements)
 
-                        urls = self._filter_urls(a.urls)
-                        if len(urls) == 0:
-                            continue
-                        a_client = self._node.SubscribeService(urls)
-                        self._active_devices[a.local_device_name] = (a,a_client)
-                        a_name = a.local_device_name
-                        
-                        self._node.PostToThreadPool(lambda: self._device_added.fire(a_name))
-                        
-                    else:
-                        self._active_devices[a.local_device_name] = (a,None)
-            a_names = [a.local_device_name for a in active_devices]
-            for a in list(self._active_devices.keys()):
-                if a not in a_names:
-                    a_client = self._active_devices[a][1]
-                    del self._active_devices[a]
-                    if a_client is not None:
-                        try:
-                            a_client.Close()
-                        except: pass
+                    urls = self._filter_urls(a.urls)
+                    if len(urls) == 0:
+                        enabled = False
+                    a_name = a.local_device_name
+                    print(f"Adding device {a_name} with urls {urls}")
+                    a_details = DeviceConnectorDetails(device_nickname=a_name, urls=urls)
+                    self._device_connector.AddDevice(a_details, force_connect=enabled)
                     
-                    self._node.PostToThreadPool(lambda: self._device_removed.fire(a))
+                    self._node.PostToThreadPool(lambda a_name=a_name: self._device_added.fire(a_name))
+                        
+            a_names = [a.local_device_name for a in active_devices]
+            for a in list(self._device_connector.DeviceNicknames):
+                if a not in a_names:
+                    self._device_connector.RemoveDevice(a)
+                    
+                    self._node.PostToThreadPool(lambda a=a: self._device_removed.fire(a))
                     
 
 
     def get_device_names(self):
         with self._lock:
-            return self._active_devices.keys()
+            return self._device_connector.DeviceNicknames
 
     def get_device_info(self, local_device_name):
         with self._lock:
-            return self._active_devices[local_device_name][0]
+            return self._active_device_specs[local_device_name]
 
-    def get_device_client(self, local_device_name,timeout = 0):
+    def get_device_client(self, local_device_name,timeout = 0,force_create=False):
         with self._lock:
-            sub = self._active_devices[local_device_name][1]
-            if not self._autoconnect and sub is None:
-                assert False, "Device not connected"                
+            sub = self._device_connector.GetDevice(local_device_name, force_create=force_create)             
         return sub.GetDefaultClientWait(timeout)
 
-    def get_device_subscription(self, local_device_name):
+    def get_device_subscription(self, local_device_name, force_create=False):
         with self._lock:
-            sub = self._active_devices[local_device_name][1]
-            if not self._autoconnect and sub is None:
-                assert False, "Device not connected"
-            return sub
+            return self._device_connector.GetDevice(local_device_name, force_create=force_create)
 
     def connect_device(self, local_device_name):
         with self._lock:
-            self._connect_request_devices.add(local_device_name)
-            a = self._active_devices.get(local_device_name, None)
-            if a is None:
-                return
-            if a[1] is None:
-                a=a[0]
-                urls = self._filter_urls(a.urls)
-                if len(urls) > 0:
-                    a_client = self._node.SubscribeService(urls)                    
-                else:
-                    a_client = None
-                self._active_devices[local_device_name] = (a,a_client)
-                if a_client is not None:
-                    
-                    self._node.PostToThreadPool(lambda: self._device_added.fire(a.local_device_name))
+            self._device_connector.ConnectDevice(local_device_name)
                     
 
     def connect_device_type(self, device_type):
         with self._lock:
             self._connect_request_device_types.add(device_type)
-            for local_device_name, a in self._active_devices.items():
-                if a[1] is not None:
+            for a in self._active_device_specs.values():
+                if a.root_object_type not in self._connect_request_device_types \
+                    and self._connect_request_device_types.isdisjoint(a.root_object_implements):
                     continue
-                a0=a[0]
-                if a0.root_object_type not in self._connect_request_device_types \
-                    and self._connect_request_device_types.isdisjoint(a0.root_object_implements):
-                    continue
-                urls = self._filter_urls(a0.urls)
-                if len(urls) > 0:
-                    a_client = self._node.SubscribeService(urls)                    
-                else:
-                    a_client = None
-                self._active_devices[local_device_name] = (a,a_client)
-                if a_client is not None:
-                    
-                    self._node.PostToThreadPool(lambda: self._device_added.fire(a0.local_device_name))
-                    
+                self._device_connector.ConnectDevice(a.local_device_name)
 
     @property
     def device_manager(self):
@@ -253,14 +222,16 @@ class DeviceManagerClient:
         self._poller.close()
 
 class _DeviceManagerConnectFilter:
-    def __init__(self, device_manager_identifier):
+    def __init__(self,node,  device_manager_identifier):
+        self._node = node
         ident_str, ident_uuid = _parse_identifier(device_manager_identifier)
 
         assert ident_str is not None, "Invalid device manager identifier specified"
 
         if ident_uuid is None:
             try:
-                device_ident_dir = local_ident_manager._get_user_identifier_path().joinpath("device")
+                node_dirs = self._node.GetNodeDirectories()
+                device_ident_dir = Path(str(node_dirs.user_config_dir)).joinpath("identifiers").joinpath("device")
                 device_ident_file = device_ident_dir.joinpath(ident_str)
                 if device_ident_file.is_file():
                     with open(device_ident_file) as f:
